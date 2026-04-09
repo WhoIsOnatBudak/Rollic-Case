@@ -52,7 +52,7 @@ public class LevelManager : MonoBehaviour
             yield break;
         }
 
-        gridManager.CreateGrid(currentLevelData.gridWidth, currentLevelData.gridHeight);
+        gridManager.CreateGrid(currentLevelData.gridWidth,currentLevelData.gridHeight,currentLevelData.grid);
         waitingAreaManager.CreateWaitingArea(currentLevelData.waitingAreaLength);
 
         yield return StartCoroutine(busStation.InitializeRoutine(currentLevelData.buses));

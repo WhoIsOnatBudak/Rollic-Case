@@ -11,7 +11,7 @@
     { "x": 0, "y": 0, "contentType": "Passenger", "color": "Red" },
     { "x": 1, "y": 0, "contentType": "Obstacle" },
     { "x": 2, "y": 0, "contentType": "Empty" },
-    { "x": 3, "y": 0, "contentType": "Spawner", "direction": "Right", "spawnColors": ["Blue", "Yellow"] },
+    { "x": 3, "y": 0, "contentType": "Empty"},
     { "x": 4, "y": 0, "contentType": "Passenger", "color": "Green" },
 
     { "x": 0, "y": 1, "contentType": "Empty" },
@@ -21,7 +21,7 @@
     { "x": 4, "y": 1, "contentType": "Passenger", "color": "Yellow" },
 
     { "x": 0, "y": 2, "contentType": "Empty" },
-    { "x": 1, "y": 2, "contentType": "Spawner", "direction": "Down", "spawnColors": ["Red", "Red", "Green"] },
+    { "x": 1, "y": 2, "contentType": "Empty"},
     { "x": 2, "y": 2, "contentType": "Passenger", "color": "Blue" },
     { "x": 3, "y": 2, "contentType": "Empty" },
     { "x": 4, "y": 2, "contentType": "Obstacle" },
