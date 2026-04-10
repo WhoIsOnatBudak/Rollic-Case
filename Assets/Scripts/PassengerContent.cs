@@ -60,4 +60,34 @@ public class PassengerContent : TileContent
         transform.position = targetPosition;
         onComplete?.Invoke();
     }
+
+    public void MoveAlongPath(System.Collections.Generic.List<Vector3> path, Vector3 finalTarget, float speed, System.Action onComplete = null)
+    {
+        StartCoroutine(MoveAlongPathRoutine(path, finalTarget, speed, onComplete));
+    }
+
+    private System.Collections.IEnumerator MoveAlongPathRoutine(System.Collections.Generic.List<Vector3> path, Vector3 finalTarget, float speed, System.Action onComplete)
+    {
+        if (path != null)
+        {
+            foreach (Vector3 waypoint in path)
+            {
+                while (Vector3.Distance(transform.position, waypoint) > 0.05f)
+                {
+                    transform.position = Vector3.MoveTowards(transform.position, waypoint, speed * Time.deltaTime);
+                    yield return null;
+                }
+                transform.position = waypoint;
+            }
+        }
+
+        while (Vector3.Distance(transform.position, finalTarget) > 0.05f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, finalTarget, speed * Time.deltaTime);
+            yield return null;
+        }
+        transform.position = finalTarget;
+
+        onComplete?.Invoke();
+    }
 }

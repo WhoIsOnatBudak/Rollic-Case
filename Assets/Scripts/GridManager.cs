@@ -128,28 +128,37 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    public bool CanReachRoad(int startX, int startY)
+    public System.Collections.Generic.List<Vector3> GetPathToRoad(int startX, int startY)
     {
-        if (startY == 0) return true;
+        if (gridTiles == null) return null;
 
-        if (gridTiles == null) return false;
+        System.Collections.Generic.List<Vector3> path = new System.Collections.Generic.List<Vector3>();
+
+        if (startY == 0) return path; // Zaten yolda, path boş.
 
         int width = gridTiles.GetLength(0);
         int height = gridTiles.GetLength(1);
 
         bool[,] visited = new bool[width, height];
         System.Collections.Generic.Queue<Vector2Int> queue = new System.Collections.Generic.Queue<Vector2Int>();
+        System.Collections.Generic.Dictionary<Vector2Int, Vector2Int> parentMap = new System.Collections.Generic.Dictionary<Vector2Int, Vector2Int>();
 
-        queue.Enqueue(new Vector2Int(startX, startY));
+        Vector2Int startNode = new Vector2Int(startX, startY);
+        queue.Enqueue(startNode);
         visited[startX, startY] = true;
 
         Vector2Int[] directions = { new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(1, 0), new Vector2Int(-1, 0) };
+        Vector2Int? targetNode = null;
 
         while (queue.Count > 0)
         {
             Vector2Int current = queue.Dequeue();
 
-            if (current.y == 0) return true;
+            if (current.y == 0)
+            {
+                targetNode = current;
+                break;
+            }
 
             foreach (Vector2Int dir in directions)
             {
@@ -161,17 +170,31 @@ public class GridManager : MonoBehaviour
                     if (!visited[nx, ny])
                     {
                         Tile tile = gridTiles[nx, ny];
-                        // If tile is Walkable it means it is empty, so we can step on it/pass through it.
                         if (tile != null && tile.IsWalkable())
                         {
                             visited[nx, ny] = true;
-                            queue.Enqueue(new Vector2Int(nx, ny));
+                            Vector2Int neighbor = new Vector2Int(nx, ny);
+                            queue.Enqueue(neighbor);
+                            parentMap[neighbor] = current;
                         }
                     }
                 }
             }
         }
-        return false;
+
+        if (targetNode.HasValue)
+        {
+            Vector2Int curr = targetNode.Value;
+            while (curr != startNode)
+            {
+                path.Add(gridTiles[curr.x, curr.y].transform.position);
+                curr = parentMap[curr];
+            }
+            path.Reverse();
+            return path;
+        }
+
+        return null;
     }
 
     private void ClearGrid()

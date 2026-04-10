@@ -95,7 +95,8 @@ public class LevelManager : MonoBehaviour
         Tile currTile = passenger.GetOwnerTile();
         if (currTile == null) return; 
 
-        if (!gridManager.CanReachRoad(currTile.GetX(), currTile.GetY()))
+        System.Collections.Generic.List<Vector3> path = gridManager.GetPathToRoad(currTile.GetX(), currTile.GetY());
+        if (path == null)
             return;
 
         Bus currentBus = busStation.GetCurrentBus();
@@ -113,7 +114,7 @@ public class LevelManager : MonoBehaviour
         {
             currentBus.ReserveSeat();
             
-            passenger.MoveTo(currentBus.transform.position, 10f, () => {
+            passenger.MoveAlongPath(path, currentBus.transform.position, 10f, () => {
                 currentBus.AddPassenger(passenger.gameObject);
                 if (currentBus.IsFull())
                 {
@@ -129,7 +130,7 @@ public class LevelManager : MonoBehaviour
             {
                 targetWaitingTile.SetContent(passenger);
                 
-                passenger.MoveTo(targetWaitingTile.transform.position, 10f, () => {
+                passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
                     if (waitingAreaManager.IsFull())
                     {
                         isGameOver = true;
