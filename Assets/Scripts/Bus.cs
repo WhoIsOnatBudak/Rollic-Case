@@ -90,12 +90,24 @@ public class Bus : MonoBehaviour
         return currentPassengerCount >= seatCapacity;
     }
 
+    private int reservedCount = 0;
+
+    public void ReserveSeat()
+    {
+        reservedCount++;
+    }
+
+    public bool IsFullyReserved()
+    {
+        return (currentPassengerCount + reservedCount) >= seatCapacity;
+    }
+
     public Transform GetFirstEmptySeat()
     {
-        if (IsFull())
+        if (IsFullyReserved())
             return null;
 
-        return seats[currentPassengerCount];
+        return seats[currentPassengerCount + reservedCount];
     }
 
     public bool AddPassenger(GameObject passengerObject)
@@ -103,14 +115,16 @@ public class Bus : MonoBehaviour
         if (IsFull())
             return false;
 
-        Transform emptySeat = GetFirstEmptySeat();
+        Transform emptySeat = seats[currentPassengerCount];
 
         if (emptySeat == null)
             return false;
 
-        passengerObject.transform.position = emptySeat.position;
-        passengerObject.transform.rotation = emptySeat.rotation;
+        if (reservedCount > 0) reservedCount--;
+
         passengerObject.transform.SetParent(emptySeat);
+        passengerObject.transform.localPosition = Vector3.zero;
+        passengerObject.transform.localEulerAngles = new Vector3(0f, 90f, 0f);
 
         currentPassengerCount++;
 

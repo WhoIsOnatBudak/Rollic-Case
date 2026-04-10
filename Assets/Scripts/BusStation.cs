@@ -177,6 +177,7 @@ public class BusStation : MonoBehaviour
         else
         {
             isReady = true;
+            LevelManager.Instance?.OnImportantActionComplete();
         }
 
         isTransitioning = false;

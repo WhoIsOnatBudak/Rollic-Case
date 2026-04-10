@@ -735,7 +735,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 2059693173860046764, guid: 6998337174fbe00e18965d262f72b524, type: 3}
   gridParent: {fileID: 1477098617}
+  contentParent: {fileID: 0}
   tileSpacing: 1.2
+  passengerPrefab: {fileID: 6741264863975929699, guid: b826b26fe373dc8fea395197bfc15ff5, type: 3}
+  obstaclePrefab: {fileID: 8706695983081525594, guid: 8f41ce8140f6254ffaa70cc3edd00c14, type: 3}
 --- !u!4 &2136872944
 Transform:
   m_ObjectHideFlags: 0

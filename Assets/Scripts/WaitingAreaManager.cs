@@ -35,6 +35,26 @@ public class WaitingAreaManager : MonoBehaviour
         return waitingAreaTiles;
     }
 
+    public bool IsFull()
+    {
+        foreach (Tile tile in waitingAreaTiles)
+        {
+            if (tile.IsEmpty())
+                return false;
+        }
+        return true;
+    }
+
+    public Tile GetFirstEmptyTile()
+    {
+        foreach (Tile tile in waitingAreaTiles)
+        {
+            if (tile.IsEmpty())
+                return tile;
+        }
+        return null;
+    }
+
     private void ClearWaitingArea()
     {
         if (waitingAreaParent == null)

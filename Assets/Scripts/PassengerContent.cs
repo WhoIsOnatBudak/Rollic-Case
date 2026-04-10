@@ -44,4 +44,20 @@ public class PassengerContent : TileContent
                 break;
         }
     }
+
+    public void MoveTo(Vector3 targetPosition, float speed, System.Action onComplete = null)
+    {
+        StartCoroutine(MoveRoutine(targetPosition, speed, onComplete));
+    }
+
+    private System.Collections.IEnumerator MoveRoutine(Vector3 targetPosition, float speed, System.Action onComplete)
+    {
+        while (Vector3.Distance(transform.position, targetPosition) > 0.05f)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+            yield return null;
+        }
+        transform.position = targetPosition;
+        onComplete?.Invoke();
+    }
 }

@@ -128,6 +128,52 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public bool CanReachRoad(int startX, int startY)
+    {
+        if (startY == 0) return true;
+
+        if (gridTiles == null) return false;
+
+        int width = gridTiles.GetLength(0);
+        int height = gridTiles.GetLength(1);
+
+        bool[,] visited = new bool[width, height];
+        System.Collections.Generic.Queue<Vector2Int> queue = new System.Collections.Generic.Queue<Vector2Int>();
+
+        queue.Enqueue(new Vector2Int(startX, startY));
+        visited[startX, startY] = true;
+
+        Vector2Int[] directions = { new Vector2Int(0, 1), new Vector2Int(0, -1), new Vector2Int(1, 0), new Vector2Int(-1, 0) };
+
+        while (queue.Count > 0)
+        {
+            Vector2Int current = queue.Dequeue();
+
+            if (current.y == 0) return true;
+
+            foreach (Vector2Int dir in directions)
+            {
+                int nx = current.x + dir.x;
+                int ny = current.y + dir.y;
+
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height)
+                {
+                    if (!visited[nx, ny])
+                    {
+                        Tile tile = gridTiles[nx, ny];
+                        // If tile is Walkable it means it is empty, so we can step on it/pass through it.
+                        if (tile != null && tile.IsWalkable())
+                        {
+                            visited[nx, ny] = true;
+                            queue.Enqueue(new Vector2Int(nx, ny));
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private void ClearGrid()
     {
         if (gridParent != null)
