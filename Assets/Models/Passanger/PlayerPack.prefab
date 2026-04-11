@@ -1011,6 +1011,7 @@ GameObject:
   - component: {fileID: 6998300466712643567}
   - component: {fileID: 8802255506973415229}
   - component: {fileID: 6741264863975929699}
+  - component: {fileID: 6710029374764806144}
   m_Layer: 0
   m_Name: PlayerPack
   m_TagString: Untagged
@@ -1027,7 +1028,7 @@ Transform:
   m_GameObject: {fileID: 5351046217388698124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.001, z: 0}
   m_LocalScale: {x: 0.5, y: 0.6, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1073,6 +1074,29 @@ MonoBehaviour:
   blueMaterial: {fileID: 2100000, guid: d60a1e4f1b74d63bea9472fd43712082, type: 2}
   greenMaterial: {fileID: 2100000, guid: 554090ea2992a47c4baa905f719726e6, type: 2}
   yellowMaterial: {fileID: 2100000, guid: 4e44efdb7bec4dfdd8de9f4c3d411a45, type: 2}
+--- !u!136 &6710029374764806144
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5351046217388698124}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.83825576
+  m_Height: 3.0856595
+  m_Direction: 1
+  m_Center: {x: -0.024076462, y: 1.3588785, z: 0}
 --- !u!1 &5465423791219308480
 GameObject:
   m_ObjectHideFlags: 0
