@@ -6,7 +6,7 @@ public class LevelManager : MonoBehaviour
     public static LevelManager Instance { get; private set; }
 
     [Header("Level Data")]
-    [SerializeField] private TextAsset levelJson;
+    [SerializeField] private TextAsset[] levelJsons;
 
     [Header("Managers")]
     [SerializeField] private GridManager gridManager;
@@ -16,6 +16,8 @@ public class LevelManager : MonoBehaviour
 
     private LevelData currentLevelData;
     private bool isGameOver = false;
+
+    [HideInInspector] public int activeMovements = 0;
 
     private void Awake()
     {
@@ -62,9 +64,24 @@ public class LevelManager : MonoBehaviour
 
     public IEnumerator LoadLevel()
     {
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
+        if (levelJsons == null || levelJsons.Length == 0)
+        {
+            Debug.LogError("Level jsons array is empty");
+            yield break;
+        }
+
+        int levelIndex = currentLevel - 1;
+        if (levelIndex >= levelJsons.Length)
+        {
+            levelIndex = levelJsons.Length - 1; // repeat last level if out of bounds
+        }
+
+        TextAsset levelJson = levelJsons[levelIndex];
+
         if (levelJson == null)
         {
-            Debug.LogError("Level json atanmadı");
+            Debug.LogError("Level json is null at index " + levelIndex);
             yield break;
         }
 
@@ -103,9 +120,60 @@ public class LevelManager : MonoBehaviour
         isGameOver = true;
 
         if (levelUIController != null)
+        {
             levelUIController.StopTimer();
+            levelUIController.ShowGameOver();
+        }
 
-        Debug.Log("Oyun bitti fonksiyonu cagirildi. Icerigi sonra doldurulacak.");
+        Debug.Log("Oyun Bitti! Kaybedildi.");
+    }
+
+    public void LevelComplete()
+    {
+        if (isGameOver)
+            return;
+
+        isGameOver = true;
+
+        if (levelUIController != null)
+        {
+            levelUIController.StopTimer();
+            levelUIController.ShowLevelComplete();
+        }
+
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
+        PlayerPrefs.SetInt("CurrentLevel", currentLevel + 1);
+        PlayerPrefs.Save();
+
+        Debug.Log("Bolum Tamamlandi! Kazanildi.");
+    }
+
+    public void CheckWinCondition()
+    {
+        if (isGameOver) return;
+        if (activeMovements > 0) return;
+
+        // Check if any passenger is on the grid
+        Tile[,] gridTiles = gridManager.GetGridTiles();
+        if (gridTiles != null)
+        {
+            foreach (Tile t in gridTiles)
+            {
+                if (t != null && !t.IsEmpty() && t.GetContent() is PassengerContent)
+                {
+                    return; // a passenger still on grid
+                }
+            }
+        }
+
+        // Check if waiting area has passengers
+        foreach (Tile wt in waitingAreaManager.GetWaitingAreaTiles())
+        {
+            if (!wt.IsEmpty()) return;
+        }
+
+        // All empty and no movements? Level Complete!
+        LevelComplete();
     }
 
     public void OnPassengerClicked(PassengerContent passenger)
@@ -136,7 +204,9 @@ public class LevelManager : MonoBehaviour
         {
             currentBus.ReserveSeat();
             
+            activeMovements++;
             passenger.MoveAlongPath(path, currentBus.transform.position, 10f, () => {
+                activeMovements--;
                 currentBus.AddPassenger(passenger.gameObject);
                 if (currentBus.IsFull())
                 {
@@ -152,7 +222,9 @@ public class LevelManager : MonoBehaviour
             {
                 targetWaitingTile.SetContent(passenger);
                 
+                activeMovements++;
                 passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
+                    activeMovements--;
                     if (waitingAreaManager.IsFull())
                     {
                         GameOver();
@@ -182,7 +254,9 @@ public class LevelManager : MonoBehaviour
                         t.ClearContent();
                         currentBus.ReserveSeat();
                         
+                        activeMovements++;
                         p.MoveTo(currentBus.transform.position, 10f, () => {
+                            activeMovements--;
                             currentBus.AddPassenger(p.gameObject);
                             if (currentBus.IsFull())
                             {
@@ -194,5 +268,7 @@ public class LevelManager : MonoBehaviour
                 }
             }
         }
+
+        CheckWinCondition();
     }
 }

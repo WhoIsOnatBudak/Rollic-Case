@@ -1,11 +1,16 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelUIController : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TMP_Text levelText;
     [SerializeField] private TMP_Text timerText;
+
+    [Header("Panels")]
+    [SerializeField] private GameObject gameOverPanel;
+    [SerializeField] private GameObject levelCompletePanel;
 
     private float remainingTime;
     private bool timerStarted = false;
@@ -73,5 +78,32 @@ public class LevelUIController : MonoBehaviour
     {
         if (timerText != null)
             timerText.text = "" + Mathf.CeilToInt(remainingTime);
+    }
+
+    public void ShowGameOver()
+    {
+        if (gameOverPanel != null)
+            gameOverPanel.SetActive(true);
+    }
+
+    public void ShowLevelComplete()
+    {
+        if (levelCompletePanel != null)
+            levelCompletePanel.SetActive(true);
+    }
+
+    public void OnNextLevelClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void OnMainMenuClicked()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
+
+    public void OnRetryClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

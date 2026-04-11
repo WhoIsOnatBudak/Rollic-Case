@@ -172,6 +172,7 @@ public class BusStation : MonoBehaviour
 
         if (currentBus == null)
         {
+            LevelManager.Instance?.CheckWinCondition();
             GameOver();
         }
         else
