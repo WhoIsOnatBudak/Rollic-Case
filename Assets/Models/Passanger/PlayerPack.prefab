@@ -1074,6 +1074,7 @@ MonoBehaviour:
   blueMaterial: {fileID: 2100000, guid: d60a1e4f1b74d63bea9472fd43712082, type: 2}
   greenMaterial: {fileID: 2100000, guid: 554090ea2992a47c4baa905f719726e6, type: 2}
   yellowMaterial: {fileID: 2100000, guid: 4e44efdb7bec4dfdd8de9f4c3d411a45, type: 2}
+  errorMaterial: {fileID: 2100000, guid: a5082414c1a7b778e8932331072e1949, type: 2}
 --- !u!136 &6710029374764806144
 CapsuleCollider:
   m_ObjectHideFlags: 0

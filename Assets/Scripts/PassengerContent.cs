@@ -8,6 +8,7 @@ public class PassengerContent : TileContent
     [SerializeField] private Material blueMaterial;
     [SerializeField] private Material greenMaterial;
     [SerializeField] private Material yellowMaterial;
+    [SerializeField] private Material errorMaterial;
 
     private ColorType passengerColor;
 
@@ -132,5 +133,43 @@ public class PassengerContent : TileContent
 
         SetRunningAnimation(false);
         onComplete?.Invoke();
+    }
+
+    private bool isPlayingFeedback = false;
+
+    public void PlayNegativeFeedback()
+    {
+        if (isPlayingFeedback) return;
+        StartCoroutine(NegativeFeedbackRoutine());
+    }
+
+    private System.Collections.IEnumerator NegativeFeedbackRoutine()
+    {
+        isPlayingFeedback = true;
+
+        if (passengerRenderer != null)
+        {
+            passengerRenderer.material = errorMaterial;
+        }
+
+        Vector3 originalPos = transform.position;
+        float duration = 0.3f;
+        float elapsed = 0f;
+        float shakeMagnitude = 0.08f;
+
+        while (elapsed < duration)
+        {
+            float offsetX = Random.Range(-shakeMagnitude, shakeMagnitude);
+            float offsetZ = Random.Range(-shakeMagnitude, shakeMagnitude);
+            transform.position = originalPos + new Vector3(offsetX, 0, offsetZ);
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = originalPos;
+        ApplyMaterial();
+
+        isPlayingFeedback = false;
     }
 }

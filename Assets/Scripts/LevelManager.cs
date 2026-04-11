@@ -29,34 +29,6 @@ public class LevelManager : MonoBehaviour
         Instance = this;
     }
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                PassengerContent passenger = hit.collider.GetComponentInParent<PassengerContent>();
-                if (passenger == null)
-                {
-                    Tile tile = hit.collider.GetComponentInParent<Tile>();
-                    if (tile != null && tile.GetContent() is PassengerContent)
-                    {
-                        passenger = (PassengerContent)tile.GetContent();
-                    }
-                }
-
-                if (passenger != null)
-                {
-                    if (levelUIController != null)
-                        levelUIController.StartTimerIfNeeded();
-
-                    OnPassengerClicked(passenger);
-                }
-            }
-        }
-    }
-
     private void Start()
     {
         StartCoroutine(LoadLevel());
@@ -178,6 +150,9 @@ public class LevelManager : MonoBehaviour
 
     public void OnPassengerClicked(PassengerContent passenger)
     {
+        if (levelUIController != null)
+            levelUIController.StartTimerIfNeeded();
+
         if (isGameOver || !busStation.IsReady()) return;
 
         if (waitingAreaManager.IsFull()) return;
@@ -187,7 +162,10 @@ public class LevelManager : MonoBehaviour
 
         System.Collections.Generic.List<Vector3> path = gridManager.GetPathToRoad(currTile.GetX(), currTile.GetY());
         if (path == null)
+        {
+            passenger.PlayNegativeFeedback();
             return;
+        }
 
         Bus currentBus = busStation.GetCurrentBus();
         bool canBoardBus = false;
