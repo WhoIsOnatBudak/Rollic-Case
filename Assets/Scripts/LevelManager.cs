@@ -12,6 +12,7 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private GridManager gridManager;
     [SerializeField] private WaitingAreaManager waitingAreaManager;
     [SerializeField] private BusStation busStation;
+    [SerializeField] private LevelUIController levelUIController;
 
     private LevelData currentLevelData;
     private bool isGameOver = false;
@@ -45,6 +46,9 @@ public class LevelManager : MonoBehaviour
 
                 if (passenger != null)
                 {
+                    if (levelUIController != null)
+                        levelUIController.StartTimerIfNeeded();
+
                     OnPassengerClicked(passenger);
                 }
             }
@@ -78,12 +82,30 @@ public class LevelManager : MonoBehaviour
             yield break;
         }
 
+        if (levelUIController != null)
+        {
+            levelUIController.Initialize(currentLevelData.levelNumber, currentLevelData.timerSeconds);
+        }
+
         gridManager.CreateGrid(currentLevelData.gridWidth, currentLevelData.gridHeight, currentLevelData.grid);
         waitingAreaManager.CreateWaitingArea(currentLevelData.waitingAreaLength);
 
         yield return StartCoroutine(busStation.InitializeRoutine(currentLevelData.buses));
-        
+
         OnImportantActionComplete();
+    }
+
+    public void GameOver()
+    {
+        if (isGameOver)
+            return;
+
+        isGameOver = true;
+
+        if (levelUIController != null)
+            levelUIController.StopTimer();
+
+        Debug.Log("Oyun bitti fonksiyonu cagirildi. Icerigi sonra doldurulacak.");
     }
 
     public void OnPassengerClicked(PassengerContent passenger)
@@ -133,8 +155,7 @@ public class LevelManager : MonoBehaviour
                 passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
                     if (waitingAreaManager.IsFull())
                     {
-                        isGameOver = true;
-                        Debug.Log("Oyun bitti, Waiting Area Doldu!");
+                        GameOver();
                     }
                     OnImportantActionComplete();
                 });

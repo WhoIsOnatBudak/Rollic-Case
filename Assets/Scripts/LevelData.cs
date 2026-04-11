@@ -3,6 +3,9 @@ using System;
 [Serializable]
 public class LevelData
 {
+    public int levelNumber;
+    public float timerSeconds;
+
     public int gridWidth;
     public int gridHeight;
     public int waitingAreaLength;

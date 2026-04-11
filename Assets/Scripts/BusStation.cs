@@ -185,6 +185,6 @@ public class BusStation : MonoBehaviour
 
     private void GameOver()
     {
-        Debug.Log("Oyun bitti, başka otobüs yok");
+        LevelManager.Instance?.GameOver();
     }
 }
