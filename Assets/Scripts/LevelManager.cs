@@ -148,6 +148,18 @@ public class LevelManager : MonoBehaviour
         LevelComplete();
     }
 
+    public void CheckLoseCondition()
+    {
+        if (isGameOver) return;
+        if (activeMovements > 0) return;
+        if (!busStation.IsReady()) return;
+
+        if (waitingAreaManager.IsFull())
+        {
+            GameOver();
+        }
+    }
+
     public void OnPassengerClicked(PassengerContent passenger)
     {
         if (levelUIController != null)
@@ -203,10 +215,6 @@ public class LevelManager : MonoBehaviour
                 activeMovements++;
                 passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
                     activeMovements--;
-                    if (waitingAreaManager.IsFull())
-                    {
-                        GameOver();
-                    }
                     OnImportantActionComplete();
                 });
             }
@@ -248,5 +256,6 @@ public class LevelManager : MonoBehaviour
         }
 
         CheckWinCondition();
+        CheckLoseCondition();
     }
 }
