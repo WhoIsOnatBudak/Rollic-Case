@@ -1,6 +1,6 @@
 {
     "levelNumber": 5,
-    "timerSeconds": 45,
+    "timerSeconds": 60,
     "gridWidth": 6,
     "gridHeight": 6,
     "waitingAreaLength": 4,
