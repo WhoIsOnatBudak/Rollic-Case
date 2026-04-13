@@ -18,6 +18,9 @@ public class Bus : MonoBehaviour
     [SerializeField] private Transform chair2;
     [SerializeField] private Transform chair3;
 
+    [Header("Effect")]
+    [SerializeField] private BusSeatEffectPlayer effectPlayer;
+
     private List<Transform> seats = new List<Transform>();
     private int seatCapacity = 3;
     private int currentPassengerCount = 0;
@@ -121,6 +124,9 @@ public class Bus : MonoBehaviour
             return false;
 
         if (reservedCount > 0) reservedCount--;
+
+        if (effectPlayer != null)
+            effectPlayer.PlayAtSeat(emptySeat);
 
         passengerObject.transform.SetParent(emptySeat);
         passengerObject.transform.localPosition = Vector3.zero;

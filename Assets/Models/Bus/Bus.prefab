@@ -850,6 +850,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6960546871186991024}
   - component: {fileID: 3787386724468993249}
+  - component: {fileID: -7048994965796166995}
   m_Layer: 0
   m_Name: Bus
   m_TagString: Untagged
@@ -913,6 +914,21 @@ MonoBehaviour:
   chair1: {fileID: 2991457735276575360}
   chair2: {fileID: 6141077293931956458}
   chair3: {fileID: 3214871278840644558}
+  effectPlayer: {fileID: -7048994965796166995}
+--- !u!114 &-7048994965796166995
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4254470580572859317}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 185464711310ed8dfb1b75e18a0a86e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportEffectPrefab: {fileID: 265766274217486953, guid: 399a994b41a9a498f9c8129f50cbbe80, type: 3}
+  positionOffset: {x: 0, y: 2, z: 0}
 --- !u!1 &4341138035967841914
 GameObject:
   m_ObjectHideFlags: 0
