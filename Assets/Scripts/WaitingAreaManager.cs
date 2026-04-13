@@ -55,6 +55,29 @@ public class WaitingAreaManager : MonoBehaviour
         return null;
     }
 
+    public bool AddExtraTile()
+    {
+        // n tile varken yeni merkez -n*spacing/2 olacak, her tile spacing/2 sola kayar
+        float shift = -tileSpacing / 2f;
+
+        foreach (Tile tile in waitingAreaTiles)
+        {
+            tile.transform.localPosition += new Vector3(shift, 0f, 0f);
+
+            // Tile üzerindeki yolcu varsa onu da kaydır
+            if (!tile.IsEmpty() && tile.GetContent() is PassengerContent passenger)
+                passenger.MoveTo(tile.transform.position, 8f);
+        }
+
+        // Yeni tile sağ uca yerleşir: n*spacing/2
+        float newX = waitingAreaTiles.Count * tileSpacing / 2f;
+
+        Tile waitingTile = Instantiate(tilePrefab, waitingAreaParent);
+        waitingTile.transform.localPosition = new Vector3(newX, 0f, 0f);
+        waitingAreaTiles.Add(waitingTile);
+        return true;
+    }
+
     private void ClearWaitingArea()
     {
         if (waitingAreaParent == null)

@@ -84,6 +84,17 @@ public class SpawnerContent : TileContent
         return passengerQueue.Count > 0;
     }
 
+    public void ReturnPassenger(ColorType color)
+    {
+        // Rengi queue'nun başına ekle (undo için)
+        Queue<ColorType> newQueue = new Queue<ColorType>();
+        newQueue.Enqueue(color);
+        while (passengerQueue.Count > 0)
+            newQueue.Enqueue(passengerQueue.Dequeue());
+        passengerQueue = newQueue;
+        UpdateUI();
+    }
+
     public void SpawnToTile(Tile targetTile)
     {
         if (passengerQueue.Count == 0 || targetTile == null || !targetTile.IsEmpty())

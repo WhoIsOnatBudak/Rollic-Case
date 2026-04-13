@@ -19,6 +19,9 @@ public class LevelManager : MonoBehaviour
 
     [HideInInspector] public int activeMovements = 0;
 
+    public bool IsGameOver => isGameOver;
+    public bool IsBusStationReady() => busStation?.IsReady() ?? false;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -80,6 +83,9 @@ public class LevelManager : MonoBehaviour
         waitingAreaManager.CreateWaitingArea(currentLevelData.waitingAreaLength);
 
         yield return StartCoroutine(busStation.InitializeRoutine(currentLevelData.buses));
+
+        if (levelUIController != null)
+            levelUIController.SetPowerUpsEnabled(true);
 
         OnImportantActionComplete();
     }
@@ -219,8 +225,10 @@ public class LevelManager : MonoBehaviour
             Tile targetWaitingTile = waitingAreaManager.GetFirstEmptyTile();
             if (targetWaitingTile != null)
             {
+                PowerUpManager.Instance?.PushUndo(passenger, currTile, targetWaitingTile);
+
                 targetWaitingTile.SetContent(passenger);
-                
+
                 activeMovements++;
                 passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
                     activeMovements--;

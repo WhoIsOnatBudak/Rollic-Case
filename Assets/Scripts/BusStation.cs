@@ -139,6 +139,8 @@ public class BusStation : MonoBehaviour
         isTransitioning = true;
         isReady = false;
 
+        PowerUpManager.Instance?.ClearUndoStack();
+
         Bus oldCurrent = currentBus;
         Bus oldNext = nextBus;
 
