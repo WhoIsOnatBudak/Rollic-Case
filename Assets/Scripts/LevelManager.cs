@@ -125,15 +125,22 @@ public class LevelManager : MonoBehaviour
         if (isGameOver) return;
         if (activeMovements > 0) return;
 
-        // Check if any passenger is on the grid
+        // Check if any passenger or spawner is on the grid
         Tile[,] gridTiles = gridManager.GetGridTiles();
         if (gridTiles != null)
         {
             foreach (Tile t in gridTiles)
             {
-                if (t != null && !t.IsEmpty() && t.GetContent() is PassengerContent)
+                if (t != null && !t.IsEmpty())
                 {
-                    return; // a passenger still on grid
+                    if (t.GetContent() is PassengerContent)
+                    {
+                        return; // a passenger still on grid
+                    }
+                    if (t.GetContent() is SpawnerContent spawner && spawner.HasPassengers())
+                    {
+                        return; // spawner still has passengers
+                    }
                 }
             }
         }
@@ -189,6 +196,8 @@ public class LevelManager : MonoBehaviour
 
         currTile.ClearContent();
         passenger.SetOwnerTile(null); 
+
+        SpawnerContent.CheckAndTriggerAdjacentSpawners(currTile, gridManager);
 
         if (canBoardBus)
         {

@@ -10,6 +10,7 @@ public class GridManager : MonoBehaviour
     [Header("Content Prefabs")]
     [SerializeField] private PassengerContent passengerPrefab;
     [SerializeField] private ObstacleContent obstaclePrefab;
+    [SerializeField] private SpawnerContent spawnerPrefab;
 
     private Tile[,] gridTiles;
 
@@ -81,12 +82,25 @@ public class GridManager : MonoBehaviour
             ObstacleContent obstacle = Instantiate(
                 obstaclePrefab,
                 tile.transform.position,
-                Quaternion.identity,
+                obstaclePrefab.transform.rotation,
                 contentParent
             );
 
             obstacle.Initialize(tile);
             tile.SetContent(obstacle);
+        }
+        else if (cellData.contentType == "Spawner")
+        {
+            SpawnerContent spawner = Instantiate(
+                spawnerPrefab,
+                tile.transform.position,
+                spawnerPrefab.transform.rotation,
+                contentParent
+            );
+
+            spawner.Initialize(tile);
+            spawner.InitializeSpawner(cellData.direction, cellData.spawnColors, passengerPrefab, contentParent);
+            tile.SetContent(spawner);
         }
         else
         {
