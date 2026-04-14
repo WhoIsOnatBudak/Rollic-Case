@@ -191,7 +191,7 @@ public class TileEditorPanel : MonoBehaviour
         float availH = containerRt != null ? containerRt.rect.height : 480f;
         float cellW  = (availW - gap * (w - 1) - 12f) / w;
         float cellH  = (availH - gap * (h - 1) - 12f) / h;
-        float cell   = Mathf.Min(cellW, cellH, 90f);
+        float cell   = Mathf.Min(cellW, cellH, 140f);
 
         glg.cellSize        = new Vector2(cell, cell);
         glg.spacing         = new Vector2(gap, gap);
@@ -234,8 +234,8 @@ public class TileEditorPanel : MonoBehaviour
         tmp.alignment        = TextAlignmentOptions.Center;
         tmp.color            = Color.white;
         tmp.enableAutoSizing = true;
-        tmp.fontSizeMin      = 7f;
-        tmp.fontSizeMax      = 14f;
+        tmp.fontSizeMin      = 10f;
+        tmp.fontSizeMax      = 22f;
 
         var captured = cell;
         btn.onClick.AddListener(() => OnTileClicked(captured));
