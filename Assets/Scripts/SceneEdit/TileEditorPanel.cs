@@ -4,26 +4,58 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Grid tile editörü — LevelEditorPanel'daki "Edit Tiles" butonuyla açılır.
-/// W×H'lik bir hücre ızgarası gösterir; hücreye tıklayınca içerik seçme
-/// (Empty / Obstacle / Passenger / Spawner) popup'ı açılır.
-///   • Passenger → renk seçme penceresi
-///   • Spawner   → yön + renk kuyruğu (min 1 / maks 3)
-/// Tüm UI Awake'te programatik olarak oluşturulur — inspector'da sadece
-/// editorPanel referansı atanır.
+/// Grid tile editörü. BusQueuePanel ile aynı pattern:
+/// inspector'dan referans al, sadece mantık burada.
 /// </summary>
 public class TileEditorPanel : MonoBehaviour
 {
     // ── Inspector ─────────────────────────────────────────────────────────────
 
+    [Header("Referans")]
     [SerializeField] private LevelEditorPanel editorPanel;
+    [SerializeField] private Button           closeButton;
+
+    [Header("Tile Grid")]
+    [SerializeField] private Transform gridContainer;   // GridLayoutGroup olan obje
+
+    [Header("Content Picker")]
+    [SerializeField] private GameObject contentPickerPanel;
+    [SerializeField] private Button     cpEmptyBtn;
+    [SerializeField] private Button     cpObstacleBtn;
+    [SerializeField] private Button     cpPassengerBtn;
+    [SerializeField] private Button     cpSpawnerBtn;
+    [SerializeField] private Button     cpCancelBtn;
+
+    [Header("Color Picker")]
+    [SerializeField] private GameObject colorPickerPanel;
+    [SerializeField] private Button     clrRedBtn;
+    [SerializeField] private Button     clrBlueBtn;
+    [SerializeField] private Button     clrGreenBtn;
+    [SerializeField] private Button     clrYellowBtn;
+    [SerializeField] private Button     clrCancelBtn;
+
+    [Header("Spawner Config")]
+    [SerializeField] private GameObject spawnerConfigPanel;
+    [SerializeField] private Button     spDirUp;
+    [SerializeField] private Button     spDirDown;
+    [SerializeField] private Button     spDirLeft;
+    [SerializeField] private Button     spDirRight;
+    [SerializeField] private Button     spAddRed;
+    [SerializeField] private Button     spAddBlue;
+    [SerializeField] private Button     spAddGreen;
+    [SerializeField] private Button     spAddYellow;
+    [SerializeField] private Button     spDeleteBtn;
+    [SerializeField] private Button     spConfirmBtn;
+    [SerializeField] private Button     spCancelBtn;
+    [SerializeField] private TMP_Text   spDirectionLabel;
+    [SerializeField] private TMP_Text   spQueueLabel;
 
     // ── Sabitler ──────────────────────────────────────────────────────────────
 
     private const int SpawnerMin = 1;
     private const int SpawnerMax = 3;
 
-    // ── Renk haritası ─────────────────────────────────────────────────────────
+    // ── Renkler ───────────────────────────────────────────────────────────────
 
     private static readonly Dictionary<string, Color> ColorMap = new()
     {
@@ -33,228 +65,107 @@ public class TileEditorPanel : MonoBehaviour
         { "Yellow", new Color(1.00f, 0.88f, 0.10f) },
     };
 
-    private static readonly Color ColTileEmpty    = new Color(0.78f, 0.78f, 0.78f);
-    private static readonly Color ColTileObstacle = new Color(0.38f, 0.38f, 0.38f);
-    private static readonly Color ColTileSpawner  = new Color(1.00f, 0.55f, 0.00f);
-    private static readonly Color ColPanel        = new Color(0.24f, 0.24f, 0.30f, 0.98f);
-    private static readonly Color ColPopup        = new Color(0.30f, 0.30f, 0.38f, 1.00f);
+    private static readonly Color ColEmpty    = new Color(0f, 0.78f, 0.78f);
+    private static readonly Color ColObstacle = new Color(0.38f, 0.38f, 0.38f);
+    private static readonly Color ColSpawner  = new Color(1.00f, 0.55f, 0.00f);
+
+    // Yön buton renkleri
+    private static readonly Color ColDirNormal   = new Color(0.25f, 0.40f, 0.65f);
+    private static readonly Color ColDirSelected = new Color(0.18f, 0.70f, 0.92f);
 
     // ── State ─────────────────────────────────────────────────────────────────
 
-    private GridCellData         selectedCell;
-    private string               spawnerDirection = "Up";
-    private readonly List<string> spawnerQueue    = new();
+    private GridCellData          selectedCell;
+    private string                spawnerDir   = "Up";
+    private readonly List<string> spawnerQueue = new();
 
-    // ── Runtime UI referansları ───────────────────────────────────────────────
+    private Dictionary<string, Button> dirButtons;
 
-    private Transform  gridContainer;
-    private GameObject contentPickerGo;
-    private GameObject colorPickerGo;
-    private GameObject spawnerConfigGo;
-    private TMP_Text   spawnerDirLabel;
-    private TMP_Text   spawnerQueueLabel;
+    // ── Unity lifecycle ───────────────────────────────────────────────────────
 
-    private readonly Dictionary<string, Button> dirBtns = new();
-
-    // ── Unity ─────────────────────────────────────────────────────────────────
-
-    private void Awake()  => BuildUI();
-    private void OnEnable() => RefreshGrid();
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // UI BUILDER
-    // ═════════════════════════════════════════════════════════════════════════
-
-    private void BuildUI()
+    private void OnEnable()
     {
-        // Panel root — tam ekran koyu overlay
-        var rootRt = GetComponent<RectTransform>();
-        if (rootRt != null)
-        {
-            rootRt.anchorMin = Vector2.zero;
-            rootRt.anchorMax = Vector2.one;
-            rootRt.offsetMin = Vector2.zero;
-            rootRt.offsetMax = Vector2.zero;
-        }
-        var rootImg = gameObject.AddComponent<Image>();
-        rootImg.color = new Color(0f, 0f, 0f, 0.55f);
-
-        // Ana panel kutusu
-        var main = MakePanel(transform, "MainPanel",
-            new Vector2(760f, 620f), Vector2.zero, ColPanel);
-
-        // Başlık
-        MakeLabel(main, "Title", "Tile Düzenle",
-            new Vector2(-25f, 270f), new Vector2(620f, 42f), 22f);
-
-        // Kapat butonu
-        var closeBtn = MakeButton(main, "CloseBtn", "X",
-            new Vector2(340f, 270f), new Vector2(44f, 44f),
-            new Color(0.75f, 0.18f, 0.18f));
-        closeBtn.onClick.AddListener(() => gameObject.SetActive(false));
-
-        // Grid alanı
-        BuildGridArea(main);
-
-        // ── Alt paneller (root transform'a ekliyoruz: üstte render edilsin)
-        BuildContentPicker(transform);
-        BuildColorPicker(transform);
-        BuildSpawnerConfig(transform);
+        BindButtons();
+        RefreshGrid();
     }
 
-    // ── Grid container (basit, scroll yok) ───────────────────────────────────
-
-    private void BuildGridArea(Transform parent)
+    private void OnDisable()
     {
-        var areaGo = new GameObject("GridArea");
-        areaGo.transform.SetParent(parent, false);
-
-        var areaRt = areaGo.AddComponent<RectTransform>();
-        areaRt.anchoredPosition = new Vector2(0f, -26f);
-        areaRt.sizeDelta        = new Vector2(700f, 510f);
-        areaGo.AddComponent<Image>().color = new Color(0.12f, 0.12f, 0.16f, 1f);
-
-        gridContainer = areaGo.transform;
+        UnbindButtons();
     }
 
-    // ── Content Picker (Empty / Obstacle / Passenger / Spawner) ──────────────
+    // ── Buton bağlama ─────────────────────────────────────────────────────────
 
-    private void BuildContentPicker(Transform parent)
+    private void BindButtons()
     {
-        var rt = MakePanel(parent, "ContentPicker",
-            new Vector2(400f, 300f), Vector2.zero, ColPopup);
-        contentPickerGo = rt.gameObject;
+        closeButton?.onClick.AddListener(OnCloseClicked);
 
-        MakeLabel(contentPickerGo.transform, "Title", "İçerik Seç",
-            new Vector2(0f, 115f), new Vector2(360f, 36f), 20f);
+        cpEmptyBtn?.onClick.AddListener(()    => OnContentSelected("Empty"));
+        cpObstacleBtn?.onClick.AddListener(() => OnContentSelected("Obstacle"));
+        cpPassengerBtn?.onClick.AddListener(() => OnContentSelected("Passenger"));
+        cpSpawnerBtn?.onClick.AddListener(()  => OnContentSelected("Spawner"));
+        cpCancelBtn?.onClick.AddListener(HideSubPanels);
 
-        var types  = new[] { "Empty",   "Obstacle", "Passenger",                   "Spawner"    };
-        var labels = new[] { "Boş",     "Engel",    "Yolcu",                       "Spawner"    };
-        var colors = new[] { ColTileEmpty, ColTileObstacle,
-                             new Color(0.90f, 0.22f, 0.22f), ColTileSpawner };
+        clrRedBtn?.onClick.AddListener(()    => OnColorSelected("Red"));
+        clrBlueBtn?.onClick.AddListener(()   => OnColorSelected("Blue"));
+        clrGreenBtn?.onClick.AddListener(()  => OnColorSelected("Green"));
+        clrYellowBtn?.onClick.AddListener(() => OnColorSelected("Yellow"));
+        clrCancelBtn?.onClick.AddListener(HideSubPanels);
 
-        float startX = -145f, spacing = 97f;
-        for (int i = 0; i < types.Length; i++)
+        dirButtons = new Dictionary<string, Button>
         {
-            string t = types[i];
-            var btn = MakeButton(contentPickerGo.transform, $"CP_{t}", labels[i],
-                new Vector2(startX + i * spacing, 25f),
-                new Vector2(85f, 85f), colors[i]);
-            btn.onClick.AddListener(() => OnContentSelected(t));
-        }
+            { "Up",    spDirUp    },
+            { "Down",  spDirDown  },
+            { "Left",  spDirLeft  },
+            { "Right", spDirRight },
+        };
+        spDirUp?.onClick.AddListener(()    => OnDirectionSelected("Up"));
+        spDirDown?.onClick.AddListener(()  => OnDirectionSelected("Down"));
+        spDirLeft?.onClick.AddListener(()  => OnDirectionSelected("Left"));
+        spDirRight?.onClick.AddListener(() => OnDirectionSelected("Right"));
 
-        var cancel = MakeButton(contentPickerGo.transform, "CP_Cancel", "İptal",
-            new Vector2(0f, -100f), new Vector2(130f, 42f),
-            new Color(0.48f, 0.48f, 0.48f));
-        cancel.onClick.AddListener(HideSubPanels);
+        spAddRed?.onClick.AddListener(()    => OnSpawnerColorAdd("Red"));
+        spAddBlue?.onClick.AddListener(()   => OnSpawnerColorAdd("Blue"));
+        spAddGreen?.onClick.AddListener(()  => OnSpawnerColorAdd("Green"));
+        spAddYellow?.onClick.AddListener(() => OnSpawnerColorAdd("Yellow"));
 
-        contentPickerGo.SetActive(false);
+        spDeleteBtn?.onClick.AddListener(OnSpawnerColorDelete);
+        spConfirmBtn?.onClick.AddListener(OnSpawnerConfirm);
+        spCancelBtn?.onClick.AddListener(HideSubPanels);
     }
 
-    // ── Color Picker ─────────────────────────────────────────────────────────
-
-    private void BuildColorPicker(Transform parent)
+    private void UnbindButtons()
     {
-        var rt = MakePanel(parent, "ColorPicker",
-            new Vector2(380f, 240f), Vector2.zero, ColPopup);
-        colorPickerGo = rt.gameObject;
+        closeButton?.onClick.RemoveAllListeners();
 
-        MakeLabel(colorPickerGo.transform, "Title", "Renk Seç",
-            new Vector2(0f, 90f), new Vector2(340f, 36f), 20f);
+        cpEmptyBtn?.onClick.RemoveAllListeners();
+        cpObstacleBtn?.onClick.RemoveAllListeners();
+        cpPassengerBtn?.onClick.RemoveAllListeners();
+        cpSpawnerBtn?.onClick.RemoveAllListeners();
+        cpCancelBtn?.onClick.RemoveAllListeners();
 
-        var colors = new[] { "Red", "Blue", "Green", "Yellow" };
-        float startX = -135f, spacing = 90f;
-        for (int i = 0; i < colors.Length; i++)
-        {
-            string c = colors[i];
-            var btn = MakeButton(colorPickerGo.transform, $"Clr_{c}", "",
-                new Vector2(startX + i * spacing, 15f),
-                new Vector2(64f, 64f), ColorMap[c]);
-            btn.onClick.AddListener(() => OnColorSelected(c));
-        }
+        clrRedBtn?.onClick.RemoveAllListeners();
+        clrBlueBtn?.onClick.RemoveAllListeners();
+        clrGreenBtn?.onClick.RemoveAllListeners();
+        clrYellowBtn?.onClick.RemoveAllListeners();
+        clrCancelBtn?.onClick.RemoveAllListeners();
 
-        var cancel = MakeButton(colorPickerGo.transform, "Clr_Cancel", "İptal",
-            new Vector2(0f, -78f), new Vector2(130f, 42f),
-            new Color(0.48f, 0.48f, 0.48f));
-        cancel.onClick.AddListener(HideSubPanels);
+        spDirUp?.onClick.RemoveAllListeners();
+        spDirDown?.onClick.RemoveAllListeners();
+        spDirLeft?.onClick.RemoveAllListeners();
+        spDirRight?.onClick.RemoveAllListeners();
 
-        colorPickerGo.SetActive(false);
+        spAddRed?.onClick.RemoveAllListeners();
+        spAddBlue?.onClick.RemoveAllListeners();
+        spAddGreen?.onClick.RemoveAllListeners();
+        spAddYellow?.onClick.RemoveAllListeners();
+
+        spDeleteBtn?.onClick.RemoveAllListeners();
+        spConfirmBtn?.onClick.RemoveAllListeners();
+        spCancelBtn?.onClick.RemoveAllListeners();
     }
 
-    // ── Spawner Config ────────────────────────────────────────────────────────
-
-    private void BuildSpawnerConfig(Transform parent)
-    {
-        var rt = MakePanel(parent, "SpawnerConfig",
-            new Vector2(460f, 440f), Vector2.zero, ColPopup);
-        spawnerConfigGo = rt.gameObject;
-
-        MakeLabel(spawnerConfigGo.transform, "Title", "Spawner Ayarla",
-            new Vector2(0f, 190f), new Vector2(420f, 36f), 20f);
-
-        // Yön başlığı
-        spawnerDirLabel = MakeLabel(spawnerConfigGo.transform, "DirLabel", "Yön: Up",
-            new Vector2(0f, 145f), new Vector2(420f, 28f), 15f);
-
-        // Yön butonları
-        var dirs      = new[] { "Up",      "Down",    "Left",  "Right" };
-        var dirLabels = new[] { "^ Yukari","v Asagi", "< Sol", "> Sag" };
-        float dX = -153f, dSpacing = 102f;
-        for (int i = 0; i < dirs.Length; i++)
-        {
-            string d = dirs[i];
-            var btn = MakeButton(spawnerConfigGo.transform, $"Dir_{d}", dirLabels[i],
-                new Vector2(dX + i * dSpacing, 100f),
-                new Vector2(92f, 38f), new Color(0.25f, 0.40f, 0.65f));
-            dirBtns[d] = btn;
-            btn.onClick.AddListener(() => OnDirectionSelected(d));
-        }
-
-        // Kuyruk etiketi
-        spawnerQueueLabel = MakeLabel(spawnerConfigGo.transform, "QueueLabel",
-            "Kuyruk: (boş) — en az 1 ekleyin",
-            new Vector2(0f, 50f), new Vector2(420f, 28f), 13f);
-
-        // Renk ekleme başlığı
-        MakeLabel(spawnerConfigGo.transform, "AddTitle", "Renk Ekle (maks 3):",
-            new Vector2(0f, 10f), new Vector2(420f, 24f), 13f);
-
-        // Renk ekleme butonları
-        var cNames = new[] { "Red", "Blue", "Green", "Yellow" };
-        float cX = -135f, cSpacing = 90f;
-        for (int i = 0; i < cNames.Length; i++)
-        {
-            string c = cNames[i];
-            var btn = MakeButton(spawnerConfigGo.transform, $"SpAdd_{c}", "",
-                new Vector2(cX + i * cSpacing, -40f),
-                new Vector2(54f, 54f), ColorMap[c]);
-            btn.onClick.AddListener(() => OnSpawnerColorAdd(c));
-        }
-
-        // Sil butonu
-        var delBtn = MakeButton(spawnerConfigGo.transform, "Sp_Delete", "Sil",
-            new Vector2(-80f, -110f), new Vector2(110f, 40f),
-            new Color(0.70f, 0.20f, 0.20f));
-        delBtn.onClick.AddListener(OnSpawnerColorDelete);
-
-        // Onayla butonu
-        var confirmBtn = MakeButton(spawnerConfigGo.transform, "Sp_Confirm", "Onayla",
-            new Vector2(80f, -110f), new Vector2(110f, 40f),
-            new Color(0.18f, 0.65f, 0.20f));
-        confirmBtn.onClick.AddListener(OnSpawnerConfirm);
-
-        // İptal butonu
-        var cancelBtn = MakeButton(spawnerConfigGo.transform, "Sp_Cancel", "İptal",
-            new Vector2(0f, -165f), new Vector2(130f, 40f),
-            new Color(0.48f, 0.48f, 0.48f));
-        cancelBtn.onClick.AddListener(HideSubPanels);
-
-        spawnerConfigGo.SetActive(false);
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // GRID REFRESH
-    // ═════════════════════════════════════════════════════════════════════════
+    // ── Grid ──────────────────────────────────────────────────────────────────
 
     private void RefreshGrid()
     {
@@ -266,18 +177,22 @@ public class TileEditorPanel : MonoBehaviour
         var level = editorPanel?.CurrentLevel;
         if (level == null) return;
 
-        int   w       = level.gridWidth;
-        int   h       = level.gridHeight;
-        float gap     = 6f;
-        float maxCell = 88f;
-        float areaW   = 688f;
-        float areaH   = 498f;
-        float cellW   = (areaW - gap * (w - 1) - 12f) / w;
-        float cellH   = (areaH - gap * (h - 1) - 12f) / h;
-        float cell    = Mathf.Min(cellW, cellH, maxCell);
+        int   w    = level.gridWidth;
+        int   h    = level.gridHeight;
+        float gap  = 2f;
 
+        // GridLayoutGroup'u bul ya da ekle
         var glg = gridContainer.GetComponent<GridLayoutGroup>()
                ?? gridContainer.gameObject.AddComponent<GridLayoutGroup>();
+
+        // Hücre boyutunu container genişliğine göre hesapla
+        var containerRt = gridContainer.GetComponent<RectTransform>();
+        float availW = containerRt != null ? containerRt.rect.width  : 600f;
+        float availH = containerRt != null ? containerRt.rect.height : 480f;
+        float cellW  = (availW - gap * (w - 1) - 12f) / w;
+        float cellH  = (availH - gap * (h - 1) - 12f) / h;
+        float cell   = Mathf.Min(cellW, cellH, 90f);
+
         glg.cellSize        = new Vector2(cell, cell);
         glg.spacing         = new Vector2(gap, gap);
         glg.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -287,9 +202,6 @@ public class TileEditorPanel : MonoBehaviour
 
         foreach (var cellData in level.grid)
             CreateTileButton(cellData);
-
-        Canvas.ForceUpdateCanvases();
-        LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)gridContainer);
     }
 
     private void CreateTileButton(GridCellData cell)
@@ -299,85 +211,81 @@ public class TileEditorPanel : MonoBehaviour
         go.AddComponent<RectTransform>();
 
         var img = go.AddComponent<Image>();
-        img.color = GetTileColor(cell);
+        img.color = TileColor(cell);
 
-        var btn  = go.AddComponent<Button>();
-        var cb   = btn.colors;
-        var tc   = GetTileColor(cell);
-        cb.normalColor      = tc;
-        cb.highlightedColor = tc * 1.28f;
-        cb.pressedColor     = tc * 0.70f;
-        cb.selectedColor    = tc;
+        var btn = go.AddComponent<Button>();
+        var cb  = btn.colors;
+        cb.normalColor      = TileColor(cell);
+        cb.highlightedColor = TileColor(cell) * 1.3f;
+        cb.pressedColor     = TileColor(cell) * 0.7f;
         cb.colorMultiplier  = 1f;
-        cb.fadeDuration     = 0.08f;
         btn.colors = cb;
 
-        // Hücre etiketi
-        var txtGo = new GameObject("Lbl");
-        txtGo.transform.SetParent(go.transform, false);
-        var trt = txtGo.AddComponent<RectTransform>();
-        trt.anchorMin = Vector2.zero;
-        trt.anchorMax = Vector2.one;
-        trt.offsetMin = new Vector2(2f, 2f);
-        trt.offsetMax = new Vector2(-2f, -2f);
-        var tmp = txtGo.AddComponent<TextMeshProUGUI>();
-        tmp.text             = GetTileLabel(cell);
+        // Etiket
+        var lGo = new GameObject("Lbl");
+        lGo.transform.SetParent(go.transform, false);
+        var lRt = lGo.AddComponent<RectTransform>();
+        lRt.anchorMin = Vector2.zero;
+        lRt.anchorMax = Vector2.one;
+        lRt.offsetMin = new Vector2(2f, 2f);
+        lRt.offsetMax = new Vector2(-2f, -2f);
+        var tmp = lGo.AddComponent<TextMeshProUGUI>();
+        tmp.text             = TileLabel(cell);
         tmp.alignment        = TextAlignmentOptions.Center;
         tmp.color            = Color.white;
         tmp.enableAutoSizing = true;
         tmp.fontSizeMin      = 7f;
-        tmp.fontSizeMax      = 15f;
+        tmp.fontSizeMax      = 14f;
 
         var captured = cell;
         btn.onClick.AddListener(() => OnTileClicked(captured));
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // INTERACTION FLOW
-    // ═════════════════════════════════════════════════════════════════════════
+    // ── Interaction ───────────────────────────────────────────────────────────
+
+    private void OnCloseClicked()
+    {
+        gameObject.SetActive(false);
+    }
 
     private void OnTileClicked(GridCellData cell)
     {
         selectedCell = cell;
         HideSubPanels();
-        contentPickerGo.SetActive(true);
+        contentPickerPanel?.SetActive(true);
     }
 
     private void OnContentSelected(string type)
     {
-        contentPickerGo.SetActive(false);
-
+        contentPickerPanel?.SetActive(false);
         switch (type)
         {
             case "Empty":
-                ApplySimple("Empty", "");
+                Apply("Empty", "");
                 break;
-
             case "Obstacle":
-                ApplySimple("Obstacle", "");
+                Apply("Obstacle", "");
                 break;
-
             case "Passenger":
-                colorPickerGo.SetActive(true);
+                colorPickerPanel?.SetActive(true);
                 break;
-
             case "Spawner":
                 OpenSpawnerConfig();
                 break;
         }
     }
 
-    private void OnColorSelected(string colorName)
+    private void OnColorSelected(string color)
     {
         selectedCell.contentType = "Passenger";
-        selectedCell.color       = colorName;
+        selectedCell.color       = color;
         selectedCell.direction   = "";
         selectedCell.spawnColors = null;
         HideSubPanels();
         RefreshGrid();
     }
 
-    private void ApplySimple(string type, string color)
+    private void Apply(string type, string color)
     {
         selectedCell.contentType = type;
         selectedCell.color       = color;
@@ -387,22 +295,22 @@ public class TileEditorPanel : MonoBehaviour
         RefreshGrid();
     }
 
-    // ── Spawner Config Flow ───────────────────────────────────────────────────
+    // ── Spawner Config ────────────────────────────────────────────────────────
 
     private void OpenSpawnerConfig()
     {
-        spawnerDirection = string.IsNullOrEmpty(selectedCell.direction) ? "Up" : selectedCell.direction;
+        spawnerDir = string.IsNullOrEmpty(selectedCell.direction) ? "Up" : selectedCell.direction;
         spawnerQueue.Clear();
         if (selectedCell.spawnColors != null)
             spawnerQueue.AddRange(selectedCell.spawnColors);
 
         RefreshSpawnerUI();
-        spawnerConfigGo.SetActive(true);
+        spawnerConfigPanel?.SetActive(true);
     }
 
     private void OnDirectionSelected(string dir)
     {
-        spawnerDirection = dir;
+        spawnerDir = dir;
         RefreshSpawnerUI();
     }
 
@@ -424,11 +332,11 @@ public class TileEditorPanel : MonoBehaviour
     {
         if (spawnerQueue.Count < SpawnerMin)
         {
-            Debug.LogWarning("[TileEditorPanel] Spawner için en az 1 renk gerekli!");
+            Debug.LogWarning("[TileEditorPanel] En az 1 renk gerekli!");
             return;
         }
         selectedCell.contentType = "Spawner";
-        selectedCell.direction   = spawnerDirection;
+        selectedCell.direction   = spawnerDir;
         selectedCell.spawnColors = spawnerQueue.ToArray();
         selectedCell.color       = "";
         HideSubPanels();
@@ -437,25 +345,24 @@ public class TileEditorPanel : MonoBehaviour
 
     private void RefreshSpawnerUI()
     {
-        if (spawnerDirLabel != null)
-            spawnerDirLabel.text = $"Yön: {spawnerDirection}";
+        if (spDirectionLabel != null)
+            spDirectionLabel.text = $"Dir=: {spawnerDir}";
 
-        if (spawnerQueueLabel != null)
+        if (spQueueLabel != null)
         {
-            spawnerQueueLabel.text = spawnerQueue.Count == 0
-                ? "Kuyruk: (boş) — en az 1 renk ekleyin"
+            spQueueLabel.text = spawnerQueue.Count == 0
+                ? "Kuyruk: (bos) - en az 1 renk ekleyin"
                 : "Kuyruk: " + string.Join(", ", spawnerQueue);
         }
 
-        // Seçili yön butonu vurgulanır
-        foreach (var kvp in dirBtns)
+        if (dirButtons == null) return;
+        foreach (var kvp in dirButtons)
         {
+            if (kvp.Value == null) continue;
             var cb = kvp.Value.colors;
-            bool selected = kvp.Key == spawnerDirection;
-            cb.normalColor      = selected
-                ? new Color(0.18f, 0.70f, 0.92f)
-                : new Color(0.25f, 0.40f, 0.65f);
-            cb.highlightedColor = cb.normalColor * 1.20f;
+            bool sel = kvp.Key == spawnerDir;
+            cb.normalColor      = sel ? ColDirSelected : ColDirNormal;
+            cb.highlightedColor = cb.normalColor * 1.2f;
             cb.pressedColor     = cb.normalColor * 0.75f;
             cb.colorMultiplier  = 1f;
             kvp.Value.colors = cb;
@@ -466,106 +373,33 @@ public class TileEditorPanel : MonoBehaviour
 
     private void HideSubPanels()
     {
-        if (contentPickerGo) contentPickerGo.SetActive(false);
-        if (colorPickerGo)   colorPickerGo.SetActive(false);
-        if (spawnerConfigGo) spawnerConfigGo.SetActive(false);
+        contentPickerPanel?.SetActive(false);
+        colorPickerPanel?.SetActive(false);
+        spawnerConfigPanel?.SetActive(false);
     }
 
-    private static Color GetTileColor(GridCellData cell)
+    private static Color TileColor(GridCellData cell)
     {
         switch (cell.contentType)
         {
-            case "Obstacle":  return ColTileObstacle;
-            case "Spawner":   return ColTileSpawner;
+            case "Obstacle":  return ColObstacle;
+            case "Spawner":   return ColSpawner;
             case "Passenger":
-                return ColorMap.TryGetValue(cell.color, out var c) ? c : ColTileEmpty;
-            default:          return ColTileEmpty;
+                return ColorMap.TryGetValue(cell.color, out var c) ? c : ColEmpty;
+            default:          return ColEmpty;
         }
     }
 
-    private static string GetTileLabel(GridCellData cell)
+    private static string TileLabel(GridCellData cell)
     {
         switch (cell.contentType)
         {
-            case "Obstacle":  return "ENGEL";
-            case "Passenger": return $"YOLCU\n{cell.color}";
+            case "Obstacle":  return "Obstacle";
+            case "Passenger": return $"Pasenger\n{cell.color}";
             case "Spawner":
                 int cnt = cell.spawnColors?.Length ?? 0;
                 return $"SPAWN\n{cell.direction}\n({cnt})";
-            default:          return "BOŞ";
+            default:          return "Empty";
         }
-    }
-
-    // ═════════════════════════════════════════════════════════════════════════
-    // UI FACTORY
-    // ═════════════════════════════════════════════════════════════════════════
-
-    private static RectTransform MakePanel(Transform parent, string name,
-        Vector2 size, Vector2 pos, Color bgColor)
-    {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        var rt = go.AddComponent<RectTransform>();
-        rt.sizeDelta        = size;
-        rt.anchoredPosition = pos;
-        go.AddComponent<Image>().color = bgColor;
-        return rt;
-    }
-
-    private static Button MakeButton(Transform parent, string name, string label,
-        Vector2 pos, Vector2 size, Color bgColor)
-    {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        var rt = go.AddComponent<RectTransform>();
-        rt.sizeDelta        = size;
-        rt.anchoredPosition = pos;
-        go.AddComponent<Image>().color = bgColor;
-
-        var btn = go.AddComponent<Button>();
-        var cb  = btn.colors;
-        cb.normalColor      = bgColor;
-        cb.highlightedColor = bgColor * 1.25f;
-        cb.pressedColor     = bgColor * 0.72f;
-        cb.selectedColor    = bgColor;
-        cb.colorMultiplier  = 1f;
-        cb.fadeDuration     = 0.08f;
-        btn.colors = cb;
-
-        if (!string.IsNullOrEmpty(label))
-        {
-            var tGo = new GameObject("Txt");
-            tGo.transform.SetParent(go.transform, false);
-            var trt = tGo.AddComponent<RectTransform>();
-            trt.anchorMin = Vector2.zero;
-            trt.anchorMax = Vector2.one;
-            trt.offsetMin = new Vector2(3f, 3f);
-            trt.offsetMax = new Vector2(-3f, -3f);
-            var tmp = tGo.AddComponent<TextMeshProUGUI>();
-            tmp.text             = label;
-            tmp.alignment        = TextAlignmentOptions.Center;
-            tmp.color            = Color.white;
-            tmp.enableAutoSizing = true;
-            tmp.fontSizeMin      = 8f;
-            tmp.fontSizeMax      = 18f;
-        }
-
-        return btn;
-    }
-
-    private static TMP_Text MakeLabel(Transform parent, string name, string text,
-        Vector2 pos, Vector2 size, float fontSize)
-    {
-        var go = new GameObject(name);
-        go.transform.SetParent(parent, false);
-        var rt = go.AddComponent<RectTransform>();
-        rt.sizeDelta        = size;
-        rt.anchoredPosition = pos;
-        var tmp = go.AddComponent<TextMeshProUGUI>();
-        tmp.text      = text;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.fontSize  = fontSize;
-        tmp.color     = Color.white;
-        return tmp;
     }
 }
