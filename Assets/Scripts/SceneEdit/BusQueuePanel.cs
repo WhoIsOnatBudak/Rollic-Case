@@ -134,8 +134,8 @@ public class BusQueuePanel : MonoBehaviour
         var grid = queueContainer.GetComponent<GridLayoutGroup>();
         grid ??= queueContainer.gameObject.AddComponent<GridLayoutGroup>();
 
-        grid.cellSize        = new Vector2(24f, 24f);
-        grid.spacing         = new Vector2(6f, 6f);
+        grid.cellSize        = new Vector2(60f, 60f);
+        grid.spacing         = new Vector2(10f, 10f);
         grid.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = BusesPerRow;
         grid.childAlignment  = TextAnchor.UpperLeft;

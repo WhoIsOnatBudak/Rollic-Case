@@ -37,6 +37,10 @@ public class LevelEditorPanel : MonoBehaviour
     [SerializeField] private Button busQueueButton;
     [SerializeField] private GameObject busQueuePanel;
 
+    [Header("Tile Editor")]
+    [SerializeField] private Button editTilesButton;
+    [SerializeField] private GameObject tileEditorPanel;
+
     // ── Limitler ──────────────────────────────────────────────────────────────
 
     private const int MinSize        = 2;
@@ -111,6 +115,7 @@ public class LevelEditorPanel : MonoBehaviour
         saveButton?.onClick.AddListener(OnSaveClicked);
         goBackButton?.onClick.AddListener(OnGoBackClicked);
         busQueueButton?.onClick.AddListener(OnBusQueueClicked);
+        editTilesButton?.onClick.AddListener(OnEditTilesClicked);
     }
 
     private void UnbindButtons()
@@ -126,6 +131,7 @@ public class LevelEditorPanel : MonoBehaviour
         saveButton?.onClick.RemoveListener(OnSaveClicked);
         goBackButton?.onClick.RemoveListener(OnGoBackClicked);
         busQueueButton?.onClick.RemoveListener(OnBusQueueClicked);
+        editTilesButton?.onClick.RemoveListener(OnEditTilesClicked);
     }
 
     // ── Buton callback'leri ───────────────────────────────────────────────────
@@ -240,6 +246,13 @@ public class LevelEditorPanel : MonoBehaviour
     private void OnBusQueueClicked()
     {
         busQueuePanel?.SetActive(!busQueuePanel.activeSelf);
+    }
+
+    // ── Edit Tiles ────────────────────────────────────────────────────────────
+
+    private void OnEditTilesClicked()
+    {
+        tileEditorPanel?.SetActive(!tileEditorPanel.activeSelf);
     }
 
     // ── Save / Go Back ────────────────────────────────────────────────────────
