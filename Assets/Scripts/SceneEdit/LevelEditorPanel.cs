@@ -28,6 +28,15 @@ public class LevelEditorPanel : MonoBehaviour
     [SerializeField] private Button waitingMinusButton;
     [SerializeField] private TMP_Text waitingText;
 
+    [Header("Panel Kontrolü")]
+    [SerializeField] private Button saveButton;
+    [SerializeField] private Button goBackButton;
+    [SerializeField] private LevelSelectPanel levelSelectPanel;
+
+    [Header("Bus Queue")]
+    [SerializeField] private Button busQueueButton;
+    [SerializeField] private GameObject busQueuePanel;
+
     // ── Limitler ──────────────────────────────────────────────────────────────
 
     private const int MinSize        = 2;
@@ -99,6 +108,9 @@ public class LevelEditorPanel : MonoBehaviour
         timeMinusButton?.onClick.AddListener(OnTimeMinus);
         waitingPlusButton?.onClick.AddListener(OnWaitingPlus);
         waitingMinusButton?.onClick.AddListener(OnWaitingMinus);
+        saveButton?.onClick.AddListener(OnSaveClicked);
+        goBackButton?.onClick.AddListener(OnGoBackClicked);
+        busQueueButton?.onClick.AddListener(OnBusQueueClicked);
     }
 
     private void UnbindButtons()
@@ -111,6 +123,9 @@ public class LevelEditorPanel : MonoBehaviour
         timeMinusButton?.onClick.RemoveListener(OnTimeMinus);
         waitingPlusButton?.onClick.RemoveListener(OnWaitingPlus);
         waitingMinusButton?.onClick.RemoveListener(OnWaitingMinus);
+        saveButton?.onClick.RemoveListener(OnSaveClicked);
+        goBackButton?.onClick.RemoveListener(OnGoBackClicked);
+        busQueueButton?.onClick.RemoveListener(OnBusQueueClicked);
     }
 
     // ── Buton callback'leri ───────────────────────────────────────────────────
@@ -218,6 +233,25 @@ public class LevelEditorPanel : MonoBehaviour
                 cell.spawnColors = prev.spawnColors;
             }
         }
+    }
+
+    // ── Bus Queue ────────────────────────────────────────────────────────────
+
+    private void OnBusQueueClicked()
+    {
+        busQueuePanel?.SetActive(!busQueuePanel.activeSelf);
+    }
+
+    // ── Save / Go Back ────────────────────────────────────────────────────────
+
+    private void OnSaveClicked()
+    {
+        SaveLevel();
+    }
+
+    private void OnGoBackClicked()
+    {
+        levelSelectPanel?.ReturnToList();
     }
 
     // ── Kaydet ───────────────────────────────────────────────────────────────
