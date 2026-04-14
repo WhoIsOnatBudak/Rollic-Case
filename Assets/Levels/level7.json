@@ -1,0 +1,123 @@
+{
+    "levelNumber": 7,
+    "timerSeconds": 30.0,
+    "gridWidth": 4,
+    "gridHeight": 3,
+    "waitingAreaLength": 3,
+    "buses": [
+        {
+            "color": "Green"
+        },
+        {
+            "color": "Blue"
+        },
+        {
+            "color": "Yellow"
+        },
+        {
+            "color": "Red"
+        }
+    ],
+    "grid": [
+        {
+            "x": 0,
+            "y": 0,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 0,
+            "contentType": "Obstacle",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 0,
+            "contentType": "Passenger",
+            "color": "Yellow",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 0,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 1,
+            "contentType": "Passenger",
+            "color": "Blue",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 1,
+            "contentType": "Passenger",
+            "color": "Blue",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 1,
+            "contentType": "Passenger",
+            "color": "Yellow",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 2,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 2,
+            "contentType": "Passenger",
+            "color": "Blue",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 2,
+            "contentType": "Spawner",
+            "color": "",
+            "direction": "Up",
+            "spawnColors": [
+                "Red",
+                "Red",
+                "Red"
+            ]
+        },
+        {
+            "x": 3,
+            "y": 2,
+            "contentType": "Passenger",
+            "color": "Yellow",
+            "direction": "",
+            "spawnColors": []
+        }
+    ]
+}

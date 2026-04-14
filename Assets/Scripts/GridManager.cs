@@ -43,6 +43,7 @@ public class GridManager : MonoBehaviour
         }
 
         InitializeContents(gridData);
+        TriggerInitialSpawns();
     }
 
     private void InitializeContents(GridCellData[] gridData)
@@ -105,6 +106,36 @@ public class GridManager : MonoBehaviour
         else
         {
             tile.ClearContent();
+        }
+    }
+
+    private void TriggerInitialSpawns()
+    {
+        int width  = gridTiles.GetLength(0);
+        int height = gridTiles.GetLength(1);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (gridTiles[x, y]?.GetContent() is SpawnerContent spawner)
+                {
+                    Tile target = GetAdjacentTileInDirection(x, y, spawner.GetFacingDirection());
+                    spawner.SpawnToTile(target);
+                }
+            }
+        }
+    }
+
+    private Tile GetAdjacentTileInDirection(int x, int y, TileDirection dir)
+    {
+        switch (dir)
+        {
+            case TileDirection.Up:    return GetTile(x, y - 1);
+            case TileDirection.Down:  return GetTile(x, y + 1);
+            case TileDirection.Left:  return GetTile(x - 1, y);
+            case TileDirection.Right: return GetTile(x + 1, y);
+            default:                  return null;
         }
     }
 

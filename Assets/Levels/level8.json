@@ -1,0 +1,151 @@
+{
+    "levelNumber": 8,
+    "timerSeconds": 30.0,
+    "gridWidth": 4,
+    "gridHeight": 4,
+    "waitingAreaLength": 3,
+    "buses": [
+        {
+            "color": "Green"
+        },
+        {
+            "color": "Yellow"
+        },
+        {
+            "color": "Red"
+        },
+        {
+            "color": "Blue"
+        }
+    ],
+    "grid": [
+        {
+            "x": 0,
+            "y": 0,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 0,
+            "contentType": "Obstacle",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 0,
+            "contentType": "Obstacle",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 0,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 1,
+            "contentType": "Passenger",
+            "color": "Red",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 1,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 2,
+            "contentType": "Passenger",
+            "color": "Red",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 2,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 2,
+            "contentType": "Passenger",
+            "color": "Yellow",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 2,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 3,
+            "contentType": "Passenger",
+            "color": "Blue",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 3,
+            "contentType": "Passenger",
+            "color": "Red",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 3,
+            "contentType": "Passenger",
+            "color": "Green",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 3,
+            "y": 3,
+            "contentType": "Passenger",
+            "color": "Yellow",
+            "direction": "",
+            "spawnColors": []
+        }
+    ]
+}

@@ -351,8 +351,8 @@ public class TileEditorPanel : MonoBehaviour
         if (spQueueLabel != null)
         {
             spQueueLabel.text = spawnerQueue.Count == 0
-                ? "Kuyruk: (bos) - en az 1 renk ekleyin"
-                : "Kuyruk: " + string.Join(", ", spawnerQueue);
+                ? "Queue: Empty"
+                : "Queue: " + string.Join(", ", spawnerQueue);
         }
 
         if (dirButtons == null) return;
