@@ -28,6 +28,11 @@ public class BusStation : MonoBehaviour
         return isReady;
     }
 
+    public bool IsTransitioning()
+    {
+        return isTransitioning;
+    }
+
     public IEnumerator InitializeRoutine(BusData[] buses)
     {
         isReady = false;
@@ -182,16 +187,16 @@ public class BusStation : MonoBehaviour
 
         if (currentBus == null)
         {
+            isTransitioning = false;
             LevelManager.Instance?.CheckWinCondition();
             GameOver();
         }
         else
         {
             isReady = true;
+            isTransitioning = false;
             LevelManager.Instance?.OnImportantActionComplete();
         }
-
-        isTransitioning = false;
     }
 
     private void GameOver()

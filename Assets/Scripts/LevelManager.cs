@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -16,6 +17,8 @@ public class LevelManager : MonoBehaviour
 
     private LevelData currentLevelData;
     private bool isGameOver = false;
+    private readonly HashSet<PassengerContent> transitionReservedPassengers = new HashSet<PassengerContent>();
+    private readonly HashSet<PassengerContent> waitingAreaIncomingPassengers = new HashSet<PassengerContent>();
 
     [HideInInspector] public int activeMovements = 0;
 
@@ -39,6 +42,11 @@ public class LevelManager : MonoBehaviour
 
     public IEnumerator LoadLevel()
     {
+        isGameOver = false;
+        activeMovements = 0;
+        transitionReservedPassengers.Clear();
+        waitingAreaIncomingPassengers.Clear();
+
         int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
         if (levelJsons == null || levelJsons.Length == 0)
         {
@@ -96,6 +104,8 @@ public class LevelManager : MonoBehaviour
             return;
 
         isGameOver = true;
+        transitionReservedPassengers.Clear();
+        waitingAreaIncomingPassengers.Clear();
 
         if (levelUIController != null)
         {
@@ -112,6 +122,8 @@ public class LevelManager : MonoBehaviour
             return;
 
         isGameOver = true;
+        transitionReservedPassengers.Clear();
+        waitingAreaIncomingPassengers.Clear();
 
         if (levelUIController != null)
         {
@@ -186,64 +198,208 @@ public class LevelManager : MonoBehaviour
         if (levelUIController != null)
             levelUIController.StartTimerIfNeeded();
 
-        if (isGameOver || !busStation.IsReady()) return;
+        if (isGameOver || busStation == null)
+            return;
 
-        if (waitingAreaManager.IsFull()) return;
+        bool isTransitioning = busStation.IsTransitioning();
+        if (!busStation.IsReady() && !isTransitioning)
+            return;
+
+        if (waitingAreaManager.IsFull())
+            return;
 
         Tile currTile = passenger.GetOwnerTile();
-        if (currTile == null) return; 
+        if (currTile == null || IsWaitingAreaTile(currTile))
+            return;
 
-        System.Collections.Generic.List<Vector3> path = gridManager.GetPathToRoad(currTile.GetX(), currTile.GetY());
+        List<Vector3> path = gridManager.GetPathToRoad(currTile.GetX(), currTile.GetY());
         if (path == null)
         {
             passenger.PlayNegativeFeedback();
             return;
         }
 
-        Bus currentBus = busStation.GetCurrentBus();
-        bool canBoardBus = false;
-
-        if (currentBus != null && !currentBus.IsFullyReserved() && currentBus.GetBusColor() == passenger.GetColor())
+        if (isTransitioning)
         {
-            canBoardBus = true;
+            HandlePassengerClickDuringTransition(passenger, currTile, path);
+            return;
         }
 
+        HandlePassengerClickNormally(passenger, currTile, path);
+    }
+
+    private void HandlePassengerClickNormally(PassengerContent passenger, Tile currTile, List<Vector3> path)
+    {
+        Bus currentBus = busStation.GetCurrentBus();
+        if (currentBus != null && !currentBus.IsFullyReserved() && currentBus.GetBusColor() == passenger.GetColor())
+        {
+            MovePassengerFromGridToBus(passenger, currTile, path, currentBus);
+            return;
+        }
+
+        MovePassengerFromGridToWaitingArea(passenger, currTile, path);
+    }
+
+    private void HandlePassengerClickDuringTransition(PassengerContent passenger, Tile currTile, List<Vector3> path)
+    {
+        MovePassengerFromGridToWaitingArea(passenger, currTile, path);
+    }
+
+    private void MovePassengerFromGridToBus(PassengerContent passenger, Tile currTile, List<Vector3> path, Bus targetBus)
+    {
         currTile.ClearContent();
-        passenger.SetOwnerTile(null); 
+        passenger.SetOwnerTile(null);
 
         SpawnerContent.CheckAndTriggerAdjacentSpawners(currTile, gridManager);
 
-        if (canBoardBus)
+        targetBus.ReserveSeat();
+
+        activeMovements++;
+        passenger.MoveAlongPath(path, targetBus.transform.position, 10f, () =>
         {
-            currentBus.ReserveSeat();
-            
-            activeMovements++;
-            passenger.MoveAlongPath(path, currentBus.transform.position, 10f, () => {
-                activeMovements--;
-                currentBus.AddPassenger(passenger.gameObject);
-                if (currentBus.IsFull())
-                {
-                    busStation.OnCurrentBusFull();
-                }
-                OnImportantActionComplete();
-            });
-        }
-        else
-        {
-            Tile targetWaitingTile = waitingAreaManager.GetFirstEmptyTile();
-            if (targetWaitingTile != null)
+            activeMovements--;
+            targetBus.AddPassenger(passenger.gameObject);
+            if (targetBus.IsFull())
             {
-                PowerUpManager.Instance?.PushUndo(passenger, currTile, targetWaitingTile);
-
-                targetWaitingTile.SetContent(passenger);
-
-                activeMovements++;
-                passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () => {
-                    activeMovements--;
-                    OnImportantActionComplete();
-                });
+                busStation.OnCurrentBusFull();
             }
+            OnImportantActionComplete();
+        });
+    }
+
+    private void MovePassengerFromGridToWaitingArea(PassengerContent passenger, Tile currTile, List<Vector3> path)
+    {
+        Tile targetWaitingTile = waitingAreaManager.GetFirstEmptyTile();
+        if (targetWaitingTile == null)
+            return;
+
+        PowerUpManager.Instance?.PushUndo(passenger, currTile, targetWaitingTile);
+
+        currTile.ClearContent();
+        passenger.SetOwnerTile(null);
+        SpawnerContent.CheckAndTriggerAdjacentSpawners(currTile, gridManager);
+
+        targetWaitingTile.SetContent(passenger);
+        waitingAreaIncomingPassengers.Add(passenger);
+
+        activeMovements++;
+        passenger.MoveAlongPath(path, targetWaitingTile.transform.position, 10f, () =>
+        {
+            activeMovements--;
+            waitingAreaIncomingPassengers.Remove(passenger);
+            HandlePassengerArrivalAtWaitingArea(passenger);
+            OnImportantActionComplete();
+        });
+    }
+
+    private void HandlePassengerArrivalAtWaitingArea(PassengerContent passenger)
+    {
+        if (passenger == null || isGameOver || busStation == null)
+            return;
+
+        Tile waitingTile = passenger.GetOwnerTile();
+        if (waitingTile == null || !IsWaitingAreaTile(waitingTile))
+            return;
+
+        Bus currentBus = busStation.GetCurrentBus();
+        if (currentBus == null || currentBus.GetBusColor() != passenger.GetColor())
+            return;
+
+        if (busStation.IsTransitioning())
+        {
+            if (!currentBus.IsFullyReserved() && !transitionReservedPassengers.Contains(passenger))
+            {
+                currentBus.ReserveSeat();
+                transitionReservedPassengers.Add(passenger);
+            }
+
+            return;
         }
+
+        if (transitionReservedPassengers.Contains(passenger) || !currentBus.IsFullyReserved())
+        {
+            MovePassengerFromWaitingAreaToBus(
+                waitingTile,
+                passenger,
+                currentBus,
+                transitionReservedPassengers.Contains(passenger)
+            );
+        }
+    }
+
+    private void MovePassengerFromWaitingAreaToBus(Tile waitingTile, PassengerContent passenger, Bus currentBus, bool useExistingReservation)
+    {
+        waitingTile.ClearContent();
+        passenger.SetOwnerTile(null);
+
+        if (!useExistingReservation)
+            currentBus.ReserveSeat();
+
+        activeMovements++;
+        passenger.MoveTo(currentBus.transform.position, 10f, () =>
+        {
+            activeMovements--;
+            transitionReservedPassengers.Remove(passenger);
+            currentBus.AddPassenger(passenger.gameObject);
+            if (currentBus.IsFull())
+            {
+                busStation.OnCurrentBusFull();
+            }
+            OnImportantActionComplete();
+        });
+    }
+
+    private void MoveReservedWaitingPassengersToBus(Bus currentBus)
+    {
+        foreach (Tile waitingTile in waitingAreaManager.GetWaitingAreaTiles())
+        {
+            PassengerContent passenger = waitingTile.GetContent() as PassengerContent;
+            if (passenger == null)
+                continue;
+
+            if (waitingAreaIncomingPassengers.Contains(passenger))
+                continue;
+
+            if (!transitionReservedPassengers.Contains(passenger))
+                continue;
+
+            if (currentBus.GetBusColor() != passenger.GetColor())
+                continue;
+
+            if (currentBus.IsFull())
+                continue;
+
+            MovePassengerFromWaitingAreaToBus(waitingTile, passenger, currentBus, true);
+        }
+    }
+
+    private void MoveRegularWaitingPassengersToBus(Bus currentBus)
+    {
+        foreach (Tile waitingTile in waitingAreaManager.GetWaitingAreaTiles())
+        {
+            PassengerContent passenger = waitingTile.GetContent() as PassengerContent;
+            if (passenger == null)
+                continue;
+
+            if (waitingAreaIncomingPassengers.Contains(passenger))
+                continue;
+
+            if (transitionReservedPassengers.Contains(passenger))
+                continue;
+
+            if (currentBus.GetBusColor() != passenger.GetColor() || currentBus.IsFullyReserved())
+                continue;
+
+            MovePassengerFromWaitingAreaToBus(waitingTile, passenger, currentBus, false);
+        }
+    }
+
+    private bool IsWaitingAreaTile(Tile tile)
+    {
+        if (tile == null)
+            return false;
+
+        return waitingAreaManager.GetWaitingAreaTiles().Contains(tile);
     }
 
     public void OnImportantActionComplete()
@@ -253,32 +409,8 @@ public class LevelManager : MonoBehaviour
         Bus currentBus = busStation.GetCurrentBus();
         if (currentBus == null) return;
 
-        foreach(Tile t in waitingAreaManager.GetWaitingAreaTiles())
-        {
-            if (!t.IsEmpty())
-            {
-                PassengerContent p = t.GetContent() as PassengerContent;
-                if (p != null)
-                {
-                    if (!currentBus.IsFullyReserved() && currentBus.GetBusColor() == p.GetColor())
-                    {
-                        t.ClearContent();
-                        currentBus.ReserveSeat();
-                        
-                        activeMovements++;
-                        p.MoveTo(currentBus.transform.position, 10f, () => {
-                            activeMovements--;
-                            currentBus.AddPassenger(p.gameObject);
-                            if (currentBus.IsFull())
-                            {
-                                busStation.OnCurrentBusFull();
-                            }
-                            OnImportantActionComplete();
-                        });
-                    }
-                }
-            }
-        }
+        MoveReservedWaitingPassengersToBus(currentBus);
+        MoveRegularWaitingPassengersToBus(currentBus);
 
         CheckWinCondition();
         CheckLoseCondition();

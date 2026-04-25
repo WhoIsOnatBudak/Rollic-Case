@@ -1,4 +1,4 @@
-*Bus transtion da tıklanabilsin
+Lazım
 *Otobüslerin fren şekli olsun
 *otobüslerin arkasından duman çıksın
 *Özel güçleri para mantığına dönüştür (gold elmaslar gold para elmas)
@@ -8,5 +8,10 @@
 
 
 
-
+Opsiyonel
 ***Otobüslerin renkleri çoğul olsun
+
+
+
+Biten
++Bus transtion da tıklanabilsin 
