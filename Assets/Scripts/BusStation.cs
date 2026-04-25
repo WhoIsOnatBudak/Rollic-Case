@@ -13,6 +13,7 @@ public class BusStation : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float entranceOffsetX = 10f;
     [SerializeField] private float exitOffsetX = 10f;
+    [SerializeField] private float filledBusExtraExitDistance = 4f;
     [SerializeField] private float moveSpeed = 8f;
 
     private Queue<BusData> busQueue = new Queue<BusData>();
@@ -157,7 +158,8 @@ public class BusStation : MonoBehaviour
         Bus oldCurrent = currentBus;
         Bus oldNext = nextBus;
 
-        Vector3 exitPosition = currentBusSlot.position + new Vector3(exitOffsetX, 0f, 0f);
+        float totalExitDistance = exitOffsetX + filledBusExtraExitDistance;
+        Vector3 exitPosition = currentBusSlot.position + new Vector3(totalExitDistance, 0f, 0f);
 
         if (oldCurrent != null)
             oldCurrent.MoveTo(exitPosition, moveSpeed);
@@ -179,7 +181,7 @@ public class BusStation : MonoBehaviour
             nextBus = null;
         }
 
-        float exitTime = exitOffsetX / moveSpeed;
+        float exitTime = totalExitDistance / moveSpeed;
         yield return new WaitForSeconds(exitTime + 0.1f);
 
         if (oldCurrent != null)

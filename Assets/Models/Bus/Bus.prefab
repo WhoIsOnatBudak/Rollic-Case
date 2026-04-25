@@ -915,6 +915,13 @@ MonoBehaviour:
   chair2: {fileID: 6141077293931956458}
   chair3: {fileID: 3214871278840644558}
   effectPlayer: {fileID: -7048994965796166995}
+  travelSpeedMultiplier: 1.15
+  brakeDistanceRatio: 0.51
+  minBrakeDistance: 1.2
+  maxBrakeDistance: 2.8
+  cruiseTimeRatio: 0.38
+  brakeSquashX: 0.08
+  brakeStretchZ: 0.12
 --- !u!114 &-7048994965796166995
 MonoBehaviour:
   m_ObjectHideFlags: 0
