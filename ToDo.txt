@@ -1,0 +1,12 @@
+*Bus transtion da tıklanabilsin
+*Otobüslerin fren şekli olsun
+*otobüslerin arkasından duman çıksın
+*Özel güçleri para mantığına dönüştür (gold elmaslar gold para elmas)
+*Özel otobüs prefab(elmas)
+*Time freeze && Teleport
+*Yazı yerine icon
+
+
+
+
+***Otobüslerin renkleri çoğul olsun

@@ -126,6 +126,14 @@ public class LevelManager : MonoBehaviour
         Debug.Log("Bolum Tamamlandi! Kazanildi.");
     }
 
+    public void OnFinalBusFilled()
+    {
+        if (isGameOver)
+            return;
+
+        levelUIController?.StopTimer();
+    }
+
     public void CheckWinCondition()
     {
         if (isGameOver) return;

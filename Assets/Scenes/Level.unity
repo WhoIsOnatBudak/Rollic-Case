@@ -825,7 +825,9 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2100000, guid: f2a20e66e0b830d64b09e277108fba82, type: 2}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8178599113761464319, guid: 35365b5d73cd311a8b69023dec4a54d7, type: 3}
+    - {fileID: 7840932316115457575, guid: 35365b5d73cd311a8b69023dec4a54d7, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35365b5d73cd311a8b69023dec4a54d7, type: 3}
@@ -1001,6 +1003,7 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 240e931215ebf87ad930af57989a6a08, type: 3}
   - {fileID: 4900000, guid: 65237693d5839fa7e8aa814c41b2e762, type: 3}
   - {fileID: 4900000, guid: 1c1531a8e7b40094095f80af994807b3, type: 3}
+  - {fileID: 4900000, guid: 2f0fd2c3aa54aa6628155b842544d01c, type: 3}
   gridManager: {fileID: 2136872943}
   waitingAreaManager: {fileID: 715445850}
   busStation: {fileID: 1022312742}
@@ -1949,7 +1952,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1974,7 +1977,7 @@ Transform:
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
   m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
-  m_LocalPosition: {x: 0, y: 18.31, z: 0}
+  m_LocalPosition: {x: 0, y: 20.48, z: -2.26}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

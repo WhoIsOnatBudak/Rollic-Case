@@ -1,0 +1,97 @@
+{
+    "levelNumber": 9,
+    "timerSeconds": 5.0,
+    "gridWidth": 3,
+    "gridHeight": 3,
+    "waitingAreaLength": 1,
+    "buses": [
+        {
+            "color": "Yellow"
+        },
+        {
+            "color": "Red"
+        }
+    ],
+    "grid": [
+        {
+            "x": 0,
+            "y": 0,
+            "contentType": "Spawner",
+            "color": "",
+            "direction": "Right",
+            "spawnColors": [
+                "Yellow",
+                "Yellow",
+                "Yellow"
+            ]
+        },
+        {
+            "x": 1,
+            "y": 0,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 0,
+            "contentType": "Spawner",
+            "color": "",
+            "direction": "Left",
+            "spawnColors": [
+                "Red",
+                "Red",
+                "Red"
+            ]
+        },
+        {
+            "x": 0,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 1,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 0,
+            "y": 2,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 1,
+            "y": 2,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        },
+        {
+            "x": 2,
+            "y": 2,
+            "contentType": "Empty",
+            "color": "",
+            "direction": "",
+            "spawnColors": []
+        }
+    ]
+}

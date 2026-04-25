@@ -131,7 +131,15 @@ public class BusStation : MonoBehaviour
         if (currentBus == null)
             return;
 
+        if (IsFinalBusFilled())
+            LevelManager.Instance?.OnFinalBusFilled();
+
         StartCoroutine(HandleBusTransition());
+    }
+
+    private bool IsFinalBusFilled()
+    {
+        return currentBus != null && currentBus.IsFull() && nextBus == null && busQueue.Count == 0;
     }
 
     private IEnumerator HandleBusTransition()
