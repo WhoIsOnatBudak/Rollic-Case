@@ -1,9 +1,8 @@
 Lazım
-*otobüslerin arkasından duman çıksın
 *Özel güçleri para mantığına dönüştür (gold elmaslar gold para elmas)
 *Özel otobüs prefab(elmas)
 *Time freeze && Teleport
-*Yazı yerine icon
+
 
 
 
@@ -15,3 +14,6 @@ Opsiyonel
 Biten
 +Bus transtion da tıklanabilsin 
 +Otobüslerin fren şekli olsun
++Yazı yerine icon
++otobüslerin arkasından duman çıksın
++Pause menu

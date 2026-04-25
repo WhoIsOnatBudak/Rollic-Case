@@ -12,6 +12,10 @@ public class LevelUIController : MonoBehaviour
     [Header("Panels")]
     [SerializeField] private GameObject gameOverPanel;
     [SerializeField] private GameObject levelCompletePanel;
+    [SerializeField] private GameObject pausePanel;
+
+    [Header("Pause")]
+    [SerializeField] private GameObject pauseButton;
 
     [Header("Power-up Buttons")]
     [SerializeField] private Button extraTileButton;
@@ -22,11 +26,22 @@ public class LevelUIController : MonoBehaviour
     [SerializeField] private TMP_Text undoCountText;
 
     private bool powerUpsEnabled = false;
+    private bool isPaused = false;
 
     private float remainingTime;
     private bool timerStarted = false;
     private bool timerEnded = false;
     private int currentLevelNumber = 1;
+
+    private void Awake()
+    {
+        SetPauseState(false);
+    }
+
+    private void OnDestroy()
+    {
+        Time.timeScale = 1f;
+    }
 
     private void Update()
     {
@@ -58,6 +73,7 @@ public class LevelUIController : MonoBehaviour
         timerEnded = false;
         powerUpsEnabled = false;
 
+        SetPauseState(false);
         SetPowerUpsVisible(false);
         RefreshLevelText();
         RefreshTimerText();
@@ -123,6 +139,7 @@ public class LevelUIController : MonoBehaviour
 
     public void ShowGameOver()
     {
+        SetPauseState(false);
         SetPowerUpsEnabled(false);
         if (gameOverPanel != null)
             gameOverPanel.SetActive(true);
@@ -130,6 +147,7 @@ public class LevelUIController : MonoBehaviour
 
     public void ShowLevelComplete()
     {
+        SetPauseState(false);
         SetPowerUpsEnabled(false);
         if (levelCompletePanel != null)
             levelCompletePanel.SetActive(true);
@@ -137,17 +155,39 @@ public class LevelUIController : MonoBehaviour
 
     public void OnNextLevelClicked()
     {
+        SetPauseState(false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void OnMainMenuClicked()
     {
+        SetPauseState(false);
         SceneManager.LoadScene("MainMenu");
     }
 
     public void OnRetryClicked()
     {
+        SetPauseState(false);
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void OnPauseButtonClicked()
+    {
+        if (isPaused)
+            return;
+
+        if (LevelManager.Instance != null && LevelManager.Instance.IsGameOver)
+            return;
+
+        SetPauseState(true);
+    }
+
+    public void OnResumeClicked()
+    {
+        if (!isPaused)
+            return;
+
+        SetPauseState(false);
     }
 
     public void OnExtraTileButtonClicked()
@@ -160,5 +200,17 @@ public class LevelUIController : MonoBehaviour
     {
         PowerUpManager.Instance?.ExecuteUndo();
         RefreshPowerUpUI();
+    }
+
+    private void SetPauseState(bool paused)
+    {
+        isPaused = paused;
+        Time.timeScale = paused ? 0f : 1f;
+
+        if (pausePanel != null)
+            pausePanel.SetActive(paused);
+
+        if (pauseButton != null)
+            pauseButton.SetActive(!paused);
     }
 }
