@@ -69,17 +69,25 @@ public class BusStation : MonoBehaviour
     private IEnumerator InitializeBusesRoutine()
     {
         currentBus = CreateBusOutside(currentBusSlot);
+        float currentBusArrivalTime = 0f;
         if (currentBus != null)
+        {
+            currentBusArrivalTime = currentBus.GetMoveDuration(currentBusSlot.position, moveSpeed);
             currentBus.MoveTo(currentBusSlot.position, moveSpeed);
+        }
 
+        float nextBusArrivalTime = 0f;
         if (busQueue.Count > 0)
         {
             nextBus = CreateBusOutside(nextBusSlot);
             if (nextBus != null)
+            {
+                nextBusArrivalTime = nextBus.GetMoveDuration(nextBusSlot.position, moveSpeed);
                 nextBus.MoveTo(nextBusSlot.position, moveSpeed);
+            }
         }
 
-        float waitTime = entranceOffsetX / moveSpeed;
+        float waitTime = Mathf.Max(currentBusArrivalTime, nextBusArrivalTime);
         yield return new WaitForSeconds(waitTime + 0.1f);
     }
 
@@ -160,12 +168,20 @@ public class BusStation : MonoBehaviour
 
         float totalExitDistance = exitOffsetX + filledBusExtraExitDistance;
         Vector3 exitPosition = currentBusSlot.position + new Vector3(totalExitDistance, 0f, 0f);
+        float exitTime = 0f;
+        float currentBusArrivalTime = 0f;
 
         if (oldCurrent != null)
+        {
+            exitTime = oldCurrent.GetMoveDuration(exitPosition, moveSpeed);
             oldCurrent.MoveTo(exitPosition, moveSpeed);
+        }
 
         if (oldNext != null)
+        {
+            currentBusArrivalTime = oldNext.GetMoveDuration(currentBusSlot.position, moveSpeed);
             oldNext.MoveTo(currentBusSlot.position, moveSpeed);
+        }
 
         currentBus = oldNext;
 
@@ -181,24 +197,36 @@ public class BusStation : MonoBehaviour
             nextBus = null;
         }
 
-        float exitTime = totalExitDistance / moveSpeed;
-        yield return new WaitForSeconds(exitTime + 0.1f);
-
-        if (oldCurrent != null)
-            Destroy(oldCurrent.gameObject);
-
         if (currentBus == null)
         {
+            yield return new WaitForSeconds(exitTime + 0.1f);
+
+            if (oldCurrent != null)
+                Destroy(oldCurrent.gameObject);
+
             isTransitioning = false;
             LevelManager.Instance?.CheckWinCondition();
             GameOver();
         }
         else
         {
+            if (oldCurrent != null)
+                StartCoroutine(DestroyBusAfterDelay(oldCurrent, exitTime + 0.1f));
+
+            yield return new WaitForSeconds(currentBusArrivalTime + 0.05f);
+
             isReady = true;
             isTransitioning = false;
             LevelManager.Instance?.OnImportantActionComplete();
         }
+    }
+
+    private IEnumerator DestroyBusAfterDelay(Bus busToDestroy, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (busToDestroy != null)
+            Destroy(busToDestroy.gameObject);
     }
 
     private void GameOver()

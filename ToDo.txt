@@ -1,5 +1,4 @@
 Lazım
-*Otobüslerin fren şekli olsun
 *otobüslerin arkasından duman çıksın
 *Özel güçleri para mantığına dönüştür (gold elmaslar gold para elmas)
 *Özel otobüs prefab(elmas)
@@ -15,3 +14,4 @@ Opsiyonel
 
 Biten
 +Bus transtion da tıklanabilsin 
++Otobüslerin fren şekli olsun

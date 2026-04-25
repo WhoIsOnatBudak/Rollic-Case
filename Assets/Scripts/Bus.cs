@@ -160,6 +160,15 @@ public class Bus : MonoBehaviour
             StartCoroutine(MoveCoroutine(targetPosition, speed));
     }
 
+    public float GetMoveDuration(Vector3 targetPosition, float speed)
+    {
+        float totalDistance = Vector3.Distance(transform.position, targetPosition);
+        if (totalDistance <= 0.001f)
+            return 0f;
+
+        return totalDistance / Mathf.Max(speed * travelSpeedMultiplier, 0.01f);
+    }
+
     private IEnumerator MoveCoroutine(Vector3 targetPosition, float speed)
     {
         Vector3 startPosition = transform.position;
