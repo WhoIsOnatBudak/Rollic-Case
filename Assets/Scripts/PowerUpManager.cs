@@ -9,8 +9,8 @@ public class PowerUpManager : MonoBehaviour
     [SerializeField] private WaitingAreaManager waitingAreaManager;
     [SerializeField] private GridManager gridManager;
 
-    public int ExtraTileUsesLeft { get; private set; } = 3;
-    public int UndoUsesLeft { get; private set; } = 3;
+    public int ExtraTileUsesLeft { get; private set; }
+    public int UndoUsesLeft { get; private set; }
 
     private struct UndoAction
     {
@@ -28,6 +28,8 @@ public class PowerUpManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        SyncPowerUpsWithInventory();
     }
 
     // --- Extra Tile ---
@@ -37,8 +39,9 @@ public class PowerUpManager : MonoBehaviour
         LevelManager lm = LevelManager.Instance;
         if (lm == null || lm.IsGameOver || !lm.IsBusStationReady()) return;
         if (ExtraTileUsesLeft <= 0) return;
+        if (!MarketManager.TryConsumePowerUp(MarketPowerUpType.ExtraTile)) return;
 
-        ExtraTileUsesLeft--;
+        SyncPowerUpsWithInventory();
         waitingAreaManager.AddExtraTile();
     }
 
@@ -80,8 +83,9 @@ public class PowerUpManager : MonoBehaviour
         }
 
         if (validAction is null) return;
+        if (!MarketManager.TryConsumePowerUp(MarketPowerUpType.Undo)) return;
 
-        UndoUsesLeft--;
+        SyncPowerUpsWithInventory();
         UndoAction action = validAction.Value;
 
         // Waiting area tile'ını serbest bırak
@@ -131,5 +135,12 @@ public class PowerUpManager : MonoBehaviour
         if (t != null && t.GetContent() is SpawnerContent spawner && spawner.GetFacingDirection() == dir)
             return spawner;
         return null;
+    }
+
+    private void SyncPowerUpsWithInventory()
+    {
+        MarketManager.EnsureInitialized();
+        ExtraTileUsesLeft = MarketManager.GetPowerUpCount(MarketPowerUpType.ExtraTile);
+        UndoUsesLeft = MarketManager.GetPowerUpCount(MarketPowerUpType.Undo);
     }
 }
