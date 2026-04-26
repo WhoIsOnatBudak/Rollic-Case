@@ -2,6 +2,8 @@ Lazım
 *Özel güçleri para mantığına dönüştür (gold elmaslar gold para elmas)
 *Özel otobüs prefab(elmas)
 *Time freeze && Teleport
+*level + second 
+*levelGenerator
 
 
 

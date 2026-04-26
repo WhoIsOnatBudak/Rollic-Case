@@ -124,6 +124,7 @@ public class LevelManager : MonoBehaviour
         isGameOver = true;
         transitionReservedPassengers.Clear();
         waitingAreaIncomingPassengers.Clear();
+        Economy.AddGold(100);
 
         if (levelUIController != null)
         {
@@ -135,7 +136,7 @@ public class LevelManager : MonoBehaviour
         PlayerPrefs.SetInt("CurrentLevel", currentLevel + 1);
         PlayerPrefs.Save();
 
-        Debug.Log("Bolum Tamamlandi! Kazanildi.");
+        Debug.Log("Bolum Tamamlandi! Kazanildi. Verilen gold: 100, toplam gold: " + Economy.GetGold());
     }
 
     public void OnFinalBusFilled()
