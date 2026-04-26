@@ -1,9 +1,12 @@
+using System;
 using UnityEngine;
 
 public static class Economy
 {
     private const string InitializedKey = "Economy.Initialized";
     private const string GoldKey = "Economy.Gold";
+
+    public static event Action<int> GoldChanged;
 
     public static int Gold => GetGold();
 
@@ -40,9 +43,13 @@ public static class Economy
     {
         EnsureInitialized();
 
+        int previousGold = GetGold();
         int safeAmount = Mathf.Max(0, amount);
         PlayerPrefs.SetInt(GoldKey, safeAmount);
         PlayerPrefs.Save();
+
+        if (previousGold != safeAmount)
+            GoldChanged?.Invoke(safeAmount);
     }
 
     public static void AddGold(int amount)
